@@ -8,9 +8,11 @@ CREATE TABLE feeds (
 
 -- "this doesn't actually index individual array values, but instead indexes the entire array"
 -- http://stackoverflow.com/questions/4058731/can-postgresql-index-array-columns
--- Confirmed to speed up job_ids = '{2}' and job_ids = '{}' queries.
--- (Note: if LIMIT is used, must ORDER BY encoded_url)
 CREATE INDEX job_ids_idx ON feeds USING GIN ("job_ids");
+
+-- Needed to make this query fast:
+-- SELECT encoded_url FROM feeds WHERE dont_download = false AND job_ids = '{}' ORDER BY encoded_url LIMIT 200;
+CREATE INDEX feeds_job_ids_encoded_url_idx ON feeds (job_ids, encoded_url);
 
 CREATE TABLE counters (
   name text CONSTRAINT name_pk PRIMARY KEY,
