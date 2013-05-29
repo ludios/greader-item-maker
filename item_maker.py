@@ -41,8 +41,9 @@ def write_item(items_root, item_name, encoded_urls):
 	try_makedirs(fdir)
 	fname = os.path.join(fdir, item_name)
 	assert not os.path.exists(fname), fname
-	with open(fname, "wb") as f:
+	with open(fname + ".tmp", "wb") as f:
 		f.write("\n".join(encoded_urls) + "\n")
+	os.rename(fname + ".tmp", fname)
 
 def main():
 	items_root = sys.argv[1]
