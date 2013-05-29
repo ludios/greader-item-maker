@@ -6,6 +6,10 @@ CREATE TABLE feeds (
   job_ids int[] NOT NULL
 );
 
+-- "this doesn't actually index individual array values, but instead indexes the entire array"
+-- http://stackoverflow.com/questions/4058731/can-postgresql-index-array-columns
+CREATE INDEX job_ids_idx ON feeds USING GIN ("job_ids");
+
 CREATE TABLE counters (
   name text CONSTRAINT name_pk PRIMARY KEY,
   count int NOT NULL
