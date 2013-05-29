@@ -18,8 +18,10 @@ def main():
 	conn.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
 	cur = conn.cursor()
 	if quiet:
-		print "'#' means encoded URL was inserted; '.' means it was already inserted"
-	for feed_url in sys.stdin:
+		print "'Quiet mode enabled; will print every 10000 input lines"
+	for n, feed_url in enumerate(sys.stdin):
+		if n % 10000 == 0:
+			print n
 		feed_url = feed_url.rstrip()
 		if not feed_url:
 			continue
@@ -34,17 +36,13 @@ def main():
 			conn.commit()
 		except psycopg2.IntegrityError, e:
 			if 'duplicate key value violates unique constraint' in str(e):
-				if quiet:
-					print ".",
-				else:
+				if not quiet:
 					print "%r already in table" % (encoded_url,)
 				conn.rollback()
 			else:
 				raise
 		else:
-			if quiet:
-				print "#",
-			else:
+			if not quiet:
 				print "Inserted %r" % (encoded_url,)
 
 if __name__ == '__main__':
