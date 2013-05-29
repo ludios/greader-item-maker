@@ -2,6 +2,7 @@
 
 import os
 import psycopg2
+from psycopg2.extensions import ISOLATION_LEVEL_SERIALIZABLE
 import sys
 import urllib
 
@@ -13,6 +14,7 @@ def main():
 	except KeyError:
 		password = ''
 	conn = psycopg2.connect("dbname='greader' user='greader' host='192.168.1.20' password='%s'" % (password,))
+	conn.set_isolation_level(ISOLATION_LEVEL_SERIALIZABLE)
 	cur = conn.cursor()
 	for feed_url in sys.stdin:
 		feed_url = feed_url.rstrip()
