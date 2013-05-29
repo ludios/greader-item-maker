@@ -25,6 +25,7 @@ def main():
 		feed_url = feed_url.rstrip()
 		if not feed_url:
 			continue
+		assert feed_url.startswith("http://") or feed_url.startswith("https://"), feed_url
 		encoded_url = urllib.quote_plus(feed_url)
 		url_encoding_method = "py%s_quote_plus" % (py_ver,)
 		dont_download = False
