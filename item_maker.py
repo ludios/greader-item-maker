@@ -22,7 +22,7 @@ def make_an_item(conn, cur):
 	next_item_id = cur.fetchall()[0][0]
 	item_name = str(next_item_id).zfill(10)
 	print "Maybe generating item %s..." % (item_name,),
-	cur.execute("SELECT encoded_url FROM feeds WHERE job_ids = %s LIMIT " + str(num_urls_in_item), ([],))
+	cur.execute("SELECT encoded_url FROM feeds WHERE dont_download = false AND job_ids = %s LIMIT " + str(num_urls_in_item), ([],))
 	encoded_urls = list(row[0] for row in cur.fetchall())
 	if len(encoded_urls) < num_urls_in_item:
 		print "NO"
