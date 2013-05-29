@@ -42,6 +42,7 @@ def write_item(items_root, item_name, encoded_urls):
 	try_makedirs(fdir)
 	fname = os.path.join(fdir, item_name)
 	assert not os.path.exists(fname), fname
+	assert not os.path.exists(fname + ".gz"), fname
 	with open(fname + ".tmp", "wb") as f:
 		f.write("\n".join(encoded_urls) + "\n")
 	subprocess.call(["gzip", "-9", fname + ".tmp"])
