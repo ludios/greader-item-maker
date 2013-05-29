@@ -2,6 +2,7 @@
 
 import os
 import psycopg2
+import subprocess
 from psycopg2.extensions import ISOLATION_LEVEL_SERIALIZABLE
 import sys
 import urllib
@@ -43,7 +44,8 @@ def write_item(items_root, item_name, encoded_urls):
 	assert not os.path.exists(fname), fname
 	with open(fname + ".tmp", "wb") as f:
 		f.write("\n".join(encoded_urls) + "\n")
-	os.rename(fname + ".tmp", fname)
+	subprocess.call(["gzip", "-9", fname + ".tmp"])
+	os.rename(fname + ".tmp.gz", fname + ".gz")
 
 def main():
 	items_root = sys.argv[1]
