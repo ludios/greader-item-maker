@@ -14,6 +14,9 @@ CREATE INDEX job_ids_idx ON feeds USING GIN ("job_ids");
 -- SELECT encoded_url FROM feeds WHERE dont_download = false AND job_ids = '{}' ORDER BY encoded_url LIMIT 200;
 CREATE INDEX feeds_job_ids_encoded_url_idx ON feeds (job_ids, encoded_url);
 
+-- For doing your LIKE queries without having to encode them first
+CREATE INDEX feeds_feed_url_idx ON feeds (feed_url);
+
 CREATE TABLE counters (
   name text CONSTRAINT name_pk PRIMARY KEY,
   count int NOT NULL
