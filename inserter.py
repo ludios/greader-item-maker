@@ -24,16 +24,21 @@ def main():
 			print n
 		feed_url = feed_url.rstrip()
 		if not feed_url:
+			continue		
+		try:
+			uni_feed_url = feed_url.decode('ascii')
+		except UnicodeDecodeError:
+			print "Failed to decode as ascii; skipping %r" % (feed_url,)
 			continue
-		assert feed_url.startswith("http://") or feed_url.startswith("https://"), feed_url
-		encoded_url = urllib.quote_plus(feed_url)
-		url_encoding_method = "py%s_quote_plus" % (py_ver,)
+		assert uni_feed_url.startswith(u"http://") or uni_feed_url.startswith(u"https://"), uni_feed_url
+		encoded_url = urllib.quote_plus(uni_feed_url)
+		url_encoding_method = u"py%s_quote_plus" % (py_ver,)
 		dont_download = False
 		job_ids = []
 		try:
 			cur.execute(
 				"INSERT INTO feeds (encoded_url, feed_url, url_encoding_method, dont_download, job_ids) VALUES (%s, %s, %s, %s, %s)",
-				(encoded_url, feed_url, url_encoding_method, dont_download, job_ids))
+				(encoded_url, uni_feed_url, url_encoding_method, dont_download, job_ids))
 			conn.commit()
 		except psycopg2.IntegrityError, e:
 			if 'duplicate key value violates unique constraint' in str(e):
