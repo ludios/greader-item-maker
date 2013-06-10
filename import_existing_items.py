@@ -28,38 +28,50 @@ def main():
 	# For URLs not written to db at all, append them to this file.
 	skip_fname = sys.argv[3]
 
+	bogus_fname = sys.argv[4]
+
 	stopfile = os.path.join(os.getcwd(), "STOP")
 	print "WARNING: To stop, do *not* use ctrl-c; instead, touch %s" % (stopfile,)
 	initial_stop_mtime = get_mtime(stopfile)
 
-	with open(skip_fname, "ab") as skips:
-		db = open_db(db_path)
+	skips = open(skip_fname, "ab")
+	bogus = open(bogus_fname, "ab")
 
-		batch = db.newBatch()
+	db = open_db(db_path)
 
-		start = time.time()
-		for n, line in enumerate(sys.stdin):
-			if n != 0 and n % lines_per_batch_write == 0:
-				db.write(batch)
-				batch = db.newBatch()
-				print_progress(n, start)
-				start = time.time()
+	batch = db.newBatch()
 
-				if get_mtime(stopfile) != initial_stop_mtime:
-					print "Stopping because %s was touched" % (stopfile,)
-					return
+	start = time.time()
+	for n, line in enumerate(sys.stdin):
+		if n != 0 and n % lines_per_batch_write == 0:
+			db.write(batch)
+			batch = db.newBatch()
+			print_progress(n, start)
+			start = time.time()
 
-			encoded_feed_url, item_ids_string = line.rsplit("\t", 1)
-			# each line in the filtered postgresql dump is "encoded_url\t{num1, num2}" or "{}" if no nums
+			if get_mtime(stopfile) != initial_stop_mtime:
+				print "Stopping because %s was touched" % (stopfile,)
+				return
+
+		encoded_feed_url, item_ids_string = line.rsplit("\t", 1)
+		# each line in the filtered postgresql dump is "encoded_url\t{num1, num2}" or "{}" if no nums
+		try:
 			item_ids = list(int(n, 10) for n in item_ids_string.strip("}{\r\n").split() if int(n, 10) <= skip_item_ids_over)
-			if not item_ids:
-				skips.write(encoded_feed_url + "\n")
-			else:
-				db.putTo(batch, reversed_encoded_url(encoded_feed_url), encode_item_ids(item_ids))
+		except ValueError:
+			print "Skipping bogus line: %r" % (line,)
+			bogus.write(line + "\n")
+			continue
+		if not item_ids:
+			skips.write(encoded_feed_url + "\n")
+		else:
+			db.putTo(batch, reversed_encoded_url(encoded_feed_url), encode_item_ids(item_ids))
 
-		print_progress(n, start)
-		db.write(batch)
-		db.close()
+	print_progress(n, start)
+	db.write(batch)
+	db.close()
+
+	skips.close()
+	bogus.close()
 
 
 try: from refbinder.api import bindRecursive
