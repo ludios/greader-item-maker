@@ -1,9 +1,6 @@
 import sys
 from struct import pack
 
-# https://code.google.com/p/leveldb-py/
-import leveldb
-
 from inserter_maker import open_db
 
 
