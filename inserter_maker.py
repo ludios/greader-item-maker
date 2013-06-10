@@ -62,28 +62,28 @@ def reversed_encoded_url(url):
 	return url
 
 
-def insert_new_encoded_urls(db, new_encoded_urls):
+def insert_new_encoded_urls(db, items_root, new_encoded_urls):
 	assert len(new_encoded_urls) == num_urls_in_item, new_encoded_urls
 	packed_next_item_id = db.get("$next_item_id$", fill_cache=False)
 	assert len(packed_next_item_id) == 4, packed_next_item_id
-	next_item_id, = unpack("<i", packed_next_item_id)
+	item_id, = unpack("<i", packed_next_item_id)
 
 	batch = db.newBatch()
 	for u in new_encoded_urls:
 		db.putTo(batch, reversed_encoded_url(u), packed_next_item_id)
-	db.putTo(batch, "$next_item_id$", pack("<i", next_item_id + 1))
+	db.putTo(batch, "$next_item_id$", pack("<i", item_id + 1))
 	db.write(batch)
 
 	# The item we write has the normal *not* reversed URLs
+	write_item(items_root, item_id, new_encoded_urls)
+
+	del new_encoded_urls[:]
 
 
-	new_encoded_urls.clear()
-
-
-def maybe_insert_new_encoded_urls(db, new_encoded_urls):
+def maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls):
 	assert len(new_encoded_urls) <= num_urls_in_item, new_encoded_urls
 	if len(new_encoded_urls) == num_urls_in_item:
-		insert_new_encoded_urls(db, new_encoded_urls)
+		insert_new_encoded_urls(db, items_root, new_encoded_urls)
 
 
 def open_db(db_path):
@@ -92,7 +92,7 @@ def open_db(db_path):
 		write_buffer_size=(64*1024*1024), block_cache_size=(128*1024*1024))
 
 
-def insert_urls(db, inputf, new_encoded_urls):
+def process_urls(db, items_root, inputf, new_encoded_urls):
 	for n, feed_url in enumerate(inputf):
 		if n % 10000 == 0:
 			print n
@@ -106,29 +106,27 @@ def insert_urls(db, inputf, new_encoded_urls):
 			continue
 		assert feed_url.startswith("http://") or feed_url.startswith("https://"), feed_url
 		encoded_url = urllib.quote_plus(feed_url)
-		if encoded_url in new_encoded_urls:
-			# No need to even hit DB in this case
-			continue
 		if db.has(reversed_encoded_url(encoded_url)):
 			continue
-		new_encoded_urls.add(encoded_url)
+		new_encoded_urls.append(encoded_url)
 
-		print encoded_url, "queued for insertion"
+		##print encoded_url, "queued for insertion"
 
-		maybe_insert_new_encoded_urls(db, new_encoded_urls)
+		maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls)
 
-	maybe_insert_new_encoded_urls(db, new_encoded_urls)
+	maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls)
 
 
 def main():
 	db_path = sys.argv[1]
-	uninserted_file = sys.argv[2]
+	items_root = sys.argv[2]
+	uninserted_file = sys.argv[3]
 
 	db = open_db(db_path)
-	new_encoded_urls = set()
+	new_encoded_urls = []
 
 	try:
-		insert_urls(db, sys.stdin, new_encoded_urls)
+		process_urls(db, items_root, sys.stdin, new_encoded_urls)
 	finally:
 		write_new_encoded_urls(new_encoded_urls, uninserted_file)
 		db.close()
