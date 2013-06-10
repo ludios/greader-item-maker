@@ -8,6 +8,9 @@ from struct import pack, unpack
 # https://code.google.com/p/leveldb-py/
 import leveldb
 
+_postImportVars = vars().keys()
+
+
 num_urls_in_item = 200
 
 # Just for progress output
@@ -173,6 +176,9 @@ def main():
 		db.close()
 
 
+try: from refbinder.api import bindRecursive
+except ImportError: pass
+else: bindRecursive(sys.modules[__name__], _postImportVars)
 
 if __name__ == '__main__':
 	main()
