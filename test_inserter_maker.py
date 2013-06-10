@@ -18,17 +18,17 @@ class InserterMakerTests(unittest.TestCase):
 	def test_reversed(self):
 		# http
 		self.assertEqual(
-			'com.blah.sub%3A80%2Fpath%3Fquery%3D1%26more%3D2:http',
+			'com.blah.sub%3A80%2Fpath%3Fquery%3D1%26more%3D2\x01',
 			reversed_encoded_url('http%3A%2F%2Fsub.blah.com%3A80%2Fpath%3Fquery%3D1%26more%3D2'))
 
 		# https
 		self.assertEqual(
-			'com.blah.sub%3A80%2Fpath%3Fquery%3D1%26more%3D2:https',
+			'com.blah.sub%3A80%2Fpath%3Fquery%3D1%26more%3D2\x02',
 			reversed_encoded_url('https%3A%2F%2Fsub.blah.com%3A80%2Fpath%3Fquery%3D1%26more%3D2'))
 
 		# lacking a :port or /path
 		self.assertEqual(
-			'com.blah.sub:http',
+			'com.blah.sub\x01',
 			reversed_encoded_url('http%3A%2F%2Fsub.blah.com'))
 
 
@@ -36,17 +36,17 @@ class InserterMakerTests(unittest.TestCase):
 		# http
 		self.assertEqual(
 			'http%3A%2F%2Fsub.blah.com%3A80%2Fpath%3Fquery%3D1%26more%3D2',
-			unreversed_encoded_url('com.blah.sub%3A80%2Fpath%3Fquery%3D1%26more%3D2:http'))
+			unreversed_encoded_url('com.blah.sub%3A80%2Fpath%3Fquery%3D1%26more%3D2\x01'))
 
 		# https
 		self.assertEqual(
 			'https%3A%2F%2Fsub.blah.com%3A80%2Fpath%3Fquery%3D1%26more%3D2',
-			unreversed_encoded_url('com.blah.sub%3A80%2Fpath%3Fquery%3D1%26more%3D2:https'))
+			unreversed_encoded_url('com.blah.sub%3A80%2Fpath%3Fquery%3D1%26more%3D2\x02'))
 
 		# lacking a :port or /path
 		self.assertEqual(
 			'http%3A%2F%2Fsub.blah.com',
-			unreversed_encoded_url('com.blah.sub:http'))
+			unreversed_encoded_url('com.blah.sub\x01'))
 
 
 

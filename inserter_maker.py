@@ -67,20 +67,23 @@ def reversed_encoded_url(url):
 		domain = rest
 		port_path_query = None
 	reversed_domain = '.'.join(domain.split('.')[::-1])
-	return reversed_domain + ('%' + port_path_query if port_path_query is not None else "") + ':' + schema
+	return reversed_domain + \
+		 ('%' + port_path_query if port_path_query is not None else "") + \
+		 ('\x01' if schema == "http" else '\x02')
 
 
 def unreversed_encoded_url(url):
-	if not (url.endswith(":http") or url.endswith(":https")):
+	if not (url.endswith("\x01") or url.endswith("\x02")):
 		raise ValueError("Encoded URL must have http or https schema: %r" % (url,))
-	rest, schema = url.rsplit(":", 1)
+	rest, schema = url[:-1], url[-1]
 	try:
 		domain, port_path_query = rest.split("%", 1)
 	except ValueError:
 		domain = rest
 		port_path_query = None
 	reversed_domain = '.'.join(domain.split('.')[::-1])
-	return schema + "%3A%2F%2F" + reversed_domain + ('%' + port_path_query if port_path_query is not None else "")
+	return ("http%3A%2F%2F" if schema == "\x01" else "https%3A%2F%2F") + \
+		 reversed_domain + ('%' + port_path_query if port_path_query is not None else "")
 
 
 def insert_new_encoded_urls(db, items_root, new_encoded_urls):
