@@ -9,9 +9,6 @@ from struct import pack, unpack
 import leveldb
 
 num_urls_in_item = 200
-# The maximum number of bytes we can append to a file without
-# corruption, assuming that there is no locking present.
-max_safe_file_append_length = 4096
 
 # Just for progress output
 lines_per_print = 10000
@@ -46,19 +43,6 @@ def write_item(items_root, item_id, encoded_urls):
 		f.close()
 	assert not os.path.exists(fname), fname
 	os.rename(fname + ".tmp", fname)
-
-
-def write_new_encoded_urls(urls, uninserted_file):
-	"""
-	Write out the encoded URLs that we haven't inserted into the database
-	yet, because we didn't have enough URLs for a work item.
-	"""
-	with open(uninserted_file, "ab") as f:
-		for u in urls:
-			if len(u) + 1 > max_safe_file_append_length:
-				print "Failed to write out %r to %r; URL is too long" % (u, uninserted_file)
-				continue
-			f.write(u + "\n")
 
 
 def encode_item_ids(ids):
@@ -152,16 +136,20 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 def main():
 	db_path = sys.argv[1]
 	items_root = sys.argv[2]
-	uninserted_file = sys.argv[3]
-	# TODO: if uninserted_file exists, load URLs from it and rename
 
 	db = open_db(db_path)
-	new_encoded_urls = []
+	new_encoded_urls = db.get("$new_encoded_urls$").split("\x00")
+	if new_encoded_urls is None:
+		new_encoded_urls = []
+
+	print "Loaded %d new_encoded_urls from db" % (len(new_encoded_urls),)
 
 	try:
 		process_urls(db, items_root, sys.stdin, new_encoded_urls)
 	finally:
-		write_new_encoded_urls(new_encoded_urls, uninserted_file)
+		db.put("$new_encoded_urls$", "\x00".join(new_encoded_urls))
+		# Not enough URLs for a work item, so store them for next time
+		print "Wrote %d new_encoded_urls to db" % (len(new_encoded_urls),)
 		db.close()
 
 
