@@ -1,7 +1,7 @@
 import os
 import sys
 import urllib
-import subprocess
+import gzip
 from struct import pack, unpack
 
 # https://code.google.com/p/leveldb-py/
@@ -27,13 +27,14 @@ def write_item(items_root, item_id, encoded_urls):
 	fdir = os.path.join(items_root, item_name[0:6])
 	try_makedirs(fdir)
 	fname = os.path.join(fdir, item_name)
-	assert not os.path.exists(fname), fname
-	assert not os.path.exists(fname + ".gz"), fname
-	with open(fname + ".tmp", "wb") as f:
+	assert not os.path.exists(fname + ".gz.tmp"), fname
+	f = gzip.open(fname + ".gz.tmp", "wb")
+	try:
 		f.write("\n".join(encoded_urls) + "\n")
-	# TODO: use Python gzip module to avoid subprocess spawning cost
-	subprocess.call(["gzip", "-9", fname + ".tmp"])
-	os.rename(fname + ".tmp.gz", fname + ".gz")
+	finally:
+		f.close()
+	assert not os.path.exists(fname + ".gz"), fname
+	os.rename(fname + ".gz.tmp", fname + ".gz")
 
 
 def write_new_encoded_urls(urls, uninserted_file):
