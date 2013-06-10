@@ -117,6 +117,9 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 	print "WARNING: To stop, do *not* use ctrl-c; instead, touch %s" % (stopfile,)
 	initial_stop_mtime = get_mtime(stopfile)
 
+	# Getting an iterator once and seeking repeatedly is faster than calling db.has(...)
+	it = db.iterator(verify_checksums=False, fill_cache=True)
+
 	# If user hit ctrl-c last time, we may actually have 200 new_encoded_urls already
 	maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls)
 
@@ -144,7 +147,9 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 			continue
 		assert feed_url.startswith("http://") or feed_url.startswith("https://"), feed_url
 		encoded_url = urllib.quote_plus(feed_url)
-		if db.has(reversed_encoded_url(encoded_url)):
+		key = reversed_encoded_url(encoded_url)
+		it.seek(key)
+		if it.valid() and it.key() == key:
 			already += 1
 			continue
 		new_encoded_urls.append(encoded_url)
