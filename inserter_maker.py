@@ -153,6 +153,7 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 	inserted = 0
 	already = 0
 	start = time.time()
+	n = 0 # Because loop body might never run
 	for n, feed_url in enumerate(inputf):
 		if n != 0 and n % lines_per_print == 0:
 			print_progress(n, start, inserted, already)
@@ -195,8 +196,10 @@ def main():
 	items_root = sys.argv[2]
 
 	db = open_db(db_path)
-	new_encoded_urls = db.get("$new_encoded_urls$").split("\x00")
-	if new_encoded_urls is None:
+	new_encoded_urls_packed = db.get("$new_encoded_urls$")
+	if new_encoded_urls_packed: # only want it if it's not None or ""
+		new_encoded_urls = new_encoded_urls_packed.split("\x00")
+	else:
 		new_encoded_urls = []
 
 	print "Loaded %d new_encoded_urls from db" % (len(new_encoded_urls),)
