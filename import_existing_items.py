@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Imports existing encoded feed URLs with item IDs, without incrementing
 $next_item_id$ or writing any URL list files.
