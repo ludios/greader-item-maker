@@ -13,11 +13,11 @@ from inserter_maker import open_db, get_mtime, encode_item_ids, reversed_encoded
 _postImportVars = vars().keys()
 
 
-lines_per_print = 100000
+lines_per_batch_write = 10000
 
 def print_progress(n, start):
 	end = time.time()
-	print "%d\tread at\t%.0f\tURLs/sec, " % (n, lines_per_print/float(end - start))
+	print "%d\tread at\t%.0f\tURLs/sec, " % (n, lines_per_batch_write/float(end - start))
 
 
 def main():
@@ -39,7 +39,9 @@ def main():
 
 		start = time.time()
 		for n, line in enumerate(sys.stdin):
-			if n != 0 and n % lines_per_print == 0:
+			if n != 0 and n % lines_per_batch_write == 0:
+				db.write(batch)
+				batch = db.newBatch()
 				print_progress(n, start)
 				start = time.time()
 
@@ -56,7 +58,6 @@ def main():
 				db.putTo(batch, reversed_encoded_url(encoded_feed_url), encode_item_ids(item_ids))
 
 		print_progress(n, start)
-		print "db.write(batch)..."
 		db.write(batch)
 		db.close()
 
