@@ -24,7 +24,7 @@ def main():
 	db_path = sys.argv[1]
 	# If item id over this number, don't write that item id to db.
 	# If all item ids over this number, don't write item to db at all.
-	skip_item_ids_over = int(sys.argv[2])
+	skip_item_ids_over = int(sys.argv[2], 10)
 	# For URLs not written to db at all, append them to this file.
 	skip_fname = sys.argv[3]
 
@@ -51,7 +51,7 @@ def main():
 
 			encoded_feed_url, item_ids_string = line.rsplit("\t", 1)
 			# each line in the filtered postgresql dump is "encoded_url\t{num1, num2}" or "{}" if no nums
-			item_ids = list(int(n) for n in item_ids_string.strip("}{\r\n").split() if int(n) <= skip_item_ids_over)
+			item_ids = list(int(n, 10) for n in item_ids_string.strip("}{\r\n").split() if int(n, 10) <= skip_item_ids_over)
 			if not item_ids:
 				skips.write(encoded_feed_url + "\n")
 			else:
