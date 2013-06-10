@@ -1,6 +1,8 @@
 """
 Imports existing encoded feed URLs with item IDs, without incrementing
 $next_item_id$ or writing any URL list files.
+
+If encoded URL already exists in db, will overwrite its assigned item ids.
 """
 
 import os

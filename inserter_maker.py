@@ -49,11 +49,11 @@ def write_item(items_root, item_id, encoded_urls):
 
 
 def encode_item_ids(ids):
-	return "".join(pack("<i", n) for n in ids)
+	return "".join(pack("<I", n) for n in ids)
 
 
 def decode_item_ids(ids):
-	return unpack("<i", ids)
+	return unpack("<I", ids)
 
 
 def reversed_encoded_url(url):
@@ -65,7 +65,7 @@ def insert_new_encoded_urls(db, items_root, new_encoded_urls):
 	assert len(new_encoded_urls) == num_urls_in_item, new_encoded_urls
 	packed_next_item_id = db.get("$next_item_id$", fill_cache=False)
 	assert len(packed_next_item_id) == 4, packed_next_item_id
-	item_id, = unpack("<i", packed_next_item_id)
+	item_id, = unpack("<I", packed_next_item_id)
 
 	# If URL file has already been written out, abort
 	item_fname = get_item_fname(items_root, item_id)
@@ -75,7 +75,7 @@ def insert_new_encoded_urls(db, items_root, new_encoded_urls):
 	batch = db.newBatch()
 	for u in new_encoded_urls:
 		db.putTo(batch, reversed_encoded_url(u), packed_next_item_id)
-	db.putTo(batch, "$next_item_id$", pack("<i", item_id + 1))
+	db.putTo(batch, "$next_item_id$", pack("<I", item_id + 1))
 	db.write(batch)
 
 	# The item we write has the normal *not* reversed URLs
