@@ -99,7 +99,22 @@ def print_progress(n, start, inserted, already):
 		n, lines_per_print/float(end - start), inserted, already)
 
 
+def get_mtime(fname):
+	try:
+		s = os.stat(fname)
+	except OSError:
+		return None
+	return s.st_mtime
+
+
 def process_urls(db, items_root, inputf, new_encoded_urls):
+	stopfile = os.path.join(os.getcwd(), "STOP")
+	print "WARNING: To stop, do *not* use ctrl-c; instead, touch %s" % (stopfile,)
+	initial_stop_mtime = get_mtime(stopfile)
+
+	# If user hit ctrl-c last time, we may actually have 200 new_encoded_urls already
+	maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls)
+
 	inserted = 0
 	already = 0
 	start = time.time()
@@ -109,6 +124,11 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 			inserted = 0
 			already = 0
 			start = time.time()
+
+			if get_mtime(stopfile) != initial_stop_mtime:
+				print "Stopping because %s was touched" % (stopfile,)
+				return
+
 		feed_url = feed_url.rstrip()
 		if not feed_url:
 			continue
