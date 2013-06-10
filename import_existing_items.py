@@ -17,7 +17,7 @@ lines_per_batch_write = 10000
 
 def print_progress(n, start):
 	end = time.time()
-	print "%d\tread at\t%.0f\tURLs/sec, " % (n, lines_per_batch_write/float(end - start))
+	print "%d\tread at\t%.0f\tURLs/sec" % (n, lines_per_batch_write/float(end - start))
 
 
 def main():
