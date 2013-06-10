@@ -106,9 +106,13 @@ def open_db(db_path):
 
 
 def process_urls(db, items_root, inputf, new_encoded_urls):
+	inserted = 0
+	already = 0
 	for n, feed_url in enumerate(inputf):
 		if n % 10000 == 0:
-			print n
+			print n, "read,", inserted, "inserted/queued,", already, "already in db"
+			inserted = 0
+			already = 0
 		feed_url = feed_url.rstrip()
 		if not feed_url:
 			continue
@@ -120,8 +124,10 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 		assert feed_url.startswith("http://") or feed_url.startswith("https://"), feed_url
 		encoded_url = urllib.quote_plus(feed_url)
 		if db.has(reversed_encoded_url(encoded_url)):
+			already += 1
 			continue
 		new_encoded_urls.append(encoded_url)
+		inserted += 1
 
 		##print encoded_url, "queued for insertion"
 
@@ -134,6 +140,7 @@ def main():
 	db_path = sys.argv[1]
 	items_root = sys.argv[2]
 	uninserted_file = sys.argv[3]
+	# TODO: if uninserted_file exists, load URLs from it and rename
 
 	db = open_db(db_path)
 	new_encoded_urls = []
