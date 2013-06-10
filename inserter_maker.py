@@ -92,8 +92,10 @@ def maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls):
 
 def open_db(db_path):
 	return leveldb.DB(
-		db_path, bloom_filter_size=16, create_if_missing=True,
-		write_buffer_size=(64*1024*1024), block_cache_size=(128*1024*1024))
+		db_path,
+		create_if_missing=True,
+		write_buffer_size=(64*1024*1024),
+		block_cache_size=(128*1024*1024))
 
 
 def print_progress(n, start, inserted, already):
