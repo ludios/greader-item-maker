@@ -57,8 +57,22 @@ def decode_item_ids(ids):
 
 
 def reversed_encoded_url(url):
-	# TODO XXX ENCODE THESE URLs into reverse.domain.format
-	return url
+	if not (url.startswith("http%3A%2F%2F") or url.startswith("https%3A%2F%2F")):
+		raise ValueError("Encoded URL must have http or https schema")
+	schema, rest = url.split("%3A%2F%2F", 1)
+	# domain is separated from port_path_query by %3A (:) or %2F (/)
+	domain, port_path_query = rest.split("%", 1)
+	reversed_domain = '.'.join(domain.split('.')[::-1])
+	return reversed_domain + '%' + port_path_query + ':' + schema
+
+
+def unreversed_encoded_url(url):
+	if not (url.endswith(":http") or url.endswith(":https")):
+		raise ValueError("Encoded URL must have http or https schema")
+	rest, schema = url.rsplit(":", 1)
+	domain, port_path_query = rest.split("%", 1)
+	reversed_domain = '.'.join(domain.split('.')[::-1])
+	return schema + "%3A%2F%2F" + reversed_domain + '%' + port_path_query
 
 
 def insert_new_encoded_urls(db, items_root, new_encoded_urls):
