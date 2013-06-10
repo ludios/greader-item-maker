@@ -12,6 +12,7 @@ num_urls_in_item = 200
 # corruption, assuming that there is no locking present.
 max_safe_file_append_length = 4096
 
+parent = os.path.dirname
 
 def try_makedirs(p):
 	try:
@@ -20,21 +21,27 @@ def try_makedirs(p):
 		pass
 
 
-def write_item(items_root, item_id, encoded_urls):
+def get_item_fname(items_root, item_id):
 	item_name = str(item_id).zfill(10)
-	assert encoded_urls, encoded_urls
 	assert len(item_name) == 10, item_name
 	fdir = os.path.join(items_root, item_name[0:6])
-	try_makedirs(fdir)
-	fname = os.path.join(fdir, item_name)
-	assert not os.path.exists(fname + ".gz.tmp"), fname
-	f = gzip.open(fname + ".gz.tmp", "wb")
+	fname = os.path.join(fdir, item_name) + ".gz"
+	return fname
+
+
+def write_item(items_root, item_id, encoded_urls):
+	assert encoded_urls, encoded_urls
+
+	fname = get_item_fname(items_root, item_id)
+	assert not os.path.exists(fname + ".tmp"), fname
+	try_makedirs(parent(fname))
+	f = gzip.open(fname + ".tmp", "wb")
 	try:
 		f.write("\n".join(encoded_urls) + "\n")
 	finally:
 		f.close()
-	assert not os.path.exists(fname + ".gz"), fname
-	os.rename(fname + ".gz.tmp", fname + ".gz")
+	assert not os.path.exists(fname), fname
+	os.rename(fname + ".tmp", fname)
 
 
 def write_new_encoded_urls(urls, uninserted_file):
@@ -68,6 +75,11 @@ def insert_new_encoded_urls(db, items_root, new_encoded_urls):
 	packed_next_item_id = db.get("$next_item_id$", fill_cache=False)
 	assert len(packed_next_item_id) == 4, packed_next_item_id
 	item_id, = unpack("<i", packed_next_item_id)
+
+	# If URL file has already been written out, abort
+	item_fname = get_item_fname(items_root, item_id)
+	if os.path.exists(item_fname):
+		raise RuntimeError("item_id is %r but %r already exists" % (item_id, item_fname))
 
 	batch = db.newBatch()
 	for u in new_encoded_urls:
