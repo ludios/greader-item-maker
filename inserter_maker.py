@@ -2,6 +2,7 @@ import os
 import sys
 import urllib
 import gzip
+import time
 from struct import pack, unpack
 
 # https://code.google.com/p/leveldb-py/
@@ -11,6 +12,9 @@ num_urls_in_item = 200
 # The maximum number of bytes we can append to a file without
 # corruption, assuming that there is no locking present.
 max_safe_file_append_length = 4096
+
+# Just for progress output
+lines_per_print = 10000
 
 parent = os.path.dirname
 
@@ -105,14 +109,22 @@ def open_db(db_path):
 		write_buffer_size=(64*1024*1024), block_cache_size=(128*1024*1024))
 
 
+def print_progress(n, start, inserted, already):
+	end = time.time()
+	print "%d\tread at\t%.0f\tURLs/sec, %d\tinserted/queued, %d\talready in db" % (
+		n, lines_per_print/float(end - start), inserted, already)
+
+
 def process_urls(db, items_root, inputf, new_encoded_urls):
 	inserted = 0
 	already = 0
+	start = time.time()
 	for n, feed_url in enumerate(inputf):
-		if n % 10000 == 0:
-			print n, "read,", inserted, "inserted/queued,", already, "already in db"
+		if n != 0 and n % lines_per_print == 0:
+			print_progress(n, start, inserted, already)
 			inserted = 0
 			already = 0
+			start = time.time()
 		feed_url = feed_url.rstrip()
 		if not feed_url:
 			continue
@@ -133,6 +145,7 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 
 		maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls)
 
+	print_progress(n, start, inserted, already)
 	maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls)
 
 
