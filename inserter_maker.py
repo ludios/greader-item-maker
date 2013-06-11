@@ -178,6 +178,9 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 		# will cause us to assign a URL to multiple items but clobber the old
 		# value), but also because leveldb performance drops off a cliff when
 		# you keep an old iterator around and are writing tons of data.
+		#
+		# TODO: Do use an iterator, but .close() it before we write; get a new
+		# one after we write.  (This might help performance ~10%.)
 		if db.has(key):
 			already += 1
 			continue
