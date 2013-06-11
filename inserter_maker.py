@@ -144,9 +144,6 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 	print "WARNING: To stop, do *not* use ctrl-c; instead, touch %s" % (stopfile,)
 	initial_stop_mtime = get_mtime(stopfile)
 
-	# Getting an iterator once and seeking repeatedly is faster than calling db.has(...)
-	it = db.iterator(verify_checksums=False, fill_cache=True)
-
 	# If user hit ctrl-c last time, we may actually have 200 new_encoded_urls already
 	maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls)
 
@@ -176,8 +173,12 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 		assert feed_url.startswith("http://") or feed_url.startswith("https://"), feed_url
 		encoded_url = urllib.quote_plus(feed_url)
 		key = reversed_encoded_url(encoded_url)
-		it.seek(key)
-		if it.valid() and it.key() == key:
+		# Do *not* try to speed up .has() by keeping an iterator around; not
+		# only is that incorrect (because the iterator is a snapshot of the data and
+		# will cause us to assign a URL to multiple items but clobber the old
+		# value), but also because leveldb performance drops off a cliff when
+		# you keep an old iterator around and are writing tons of data.
+		if db.has(key):
 			already += 1
 			continue
 		new_encoded_urls.append(encoded_url)
