@@ -135,7 +135,7 @@ def get_mtime(fname):
 	return s.st_mtime
 
 
-def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item):
+def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, start_at_input_line):
 	stopfile = os.path.join(os.getcwd(), "STOP")
 	print "WARNING: To stop, do *not* use ctrl-c; instead, touch %s" % (stopfile,)
 	initial_stop_mtime = get_mtime(stopfile)
@@ -149,6 +149,9 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item):
 	start = time.time()
 	n = 0 # Because loop body might never run
 	for n, feed_url in enumerate(inputf):
+		if n < start_at_input_line:
+			continue
+
 		if n != 0 and n % lines_per_print == 0:
 			print_progress(n, start, inserted, already)
 			inserted = 0
@@ -197,6 +200,12 @@ def main():
 	items_root = sys.argv[2]
 	# Use ~200 for feeds that are unlikely to 404, ~5000 for those that are
 	num_urls_in_item = int(sys.argv[3])
+	assert 10 <= num_urls_in_item <= 10000, num_urls_in_item
+	try:
+		start_at_input_line = int(sys.argv[4])
+		assert start_at_input_line >= 0, start_at_input_line
+	except IndexError:
+		start_at_input_line = 0
 
 	db = open_db(db_path)
 	new_encoded_urls_packed = db.get("$new_encoded_urls$")
@@ -208,7 +217,7 @@ def main():
 	print "Loaded %d new_encoded_urls from db" % (len(new_encoded_urls),)
 
 	try:
-		process_urls(db, items_root, sys.stdin, new_encoded_urls, num_urls_in_item)
+		process_urls(db, items_root, sys.stdin, new_encoded_urls, num_urls_in_item, start_at_input_line)
 	finally:
 		db.put("$new_encoded_urls$", "\x00".join(new_encoded_urls))
 		# Not enough URLs for a work item, so store them for next time
