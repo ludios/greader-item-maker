@@ -200,7 +200,7 @@ def main():
 	items_root = sys.argv[2]
 	# Use ~200 for feeds that are unlikely to 404, ~5000 for those that are
 	num_urls_in_item = int(sys.argv[3])
-	assert 10 <= num_urls_in_item <= 10000, num_urls_in_item
+	assert 10 <= num_urls_in_item <= 20000, num_urls_in_item
 	try:
 		start_at_input_line = int(sys.argv[4])
 		assert start_at_input_line >= 0, start_at_input_line
