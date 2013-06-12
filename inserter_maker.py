@@ -13,8 +13,6 @@ import leveldb
 _postImportVars = vars().keys()
 
 
-num_urls_in_item = 200
-
 # Just for progress output
 lines_per_print = 10000
 
@@ -89,7 +87,6 @@ def unreversed_encoded_url(url):
 
 
 def insert_new_encoded_urls(db, items_root, new_encoded_urls):
-	assert len(new_encoded_urls) == num_urls_in_item, new_encoded_urls
 	packed_next_item_id = db.get("$next_item_id$", fill_cache=False)
 	assert len(packed_next_item_id) == 4, packed_next_item_id
 	item_id, = unpack("<I", packed_next_item_id)
@@ -111,9 +108,8 @@ def insert_new_encoded_urls(db, items_root, new_encoded_urls):
 	del new_encoded_urls[:]
 
 
-def maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls):
-	assert len(new_encoded_urls) <= num_urls_in_item, new_encoded_urls
-	if len(new_encoded_urls) == num_urls_in_item:
+def maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls, num_urls_in_item):
+	if len(new_encoded_urls) >= num_urls_in_item:
 		insert_new_encoded_urls(db, items_root, new_encoded_urls)
 
 
@@ -139,13 +135,14 @@ def get_mtime(fname):
 	return s.st_mtime
 
 
-def process_urls(db, items_root, inputf, new_encoded_urls):
+def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item):
 	stopfile = os.path.join(os.getcwd(), "STOP")
 	print "WARNING: To stop, do *not* use ctrl-c; instead, touch %s" % (stopfile,)
 	initial_stop_mtime = get_mtime(stopfile)
 
-	# If user hit ctrl-c last time, we may actually have 200 new_encoded_urls already
-	maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls)
+	# If user hit ctrl-c last time, we may actually have [num_urls_in_item] new_encoded_urls already
+	# (We may also have this much if num_urls_in_item is smaller than last time.)
+	maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls, num_urls_in_item)
 
 	inserted = 0
 	already = 0
@@ -189,15 +186,17 @@ def process_urls(db, items_root, inputf, new_encoded_urls):
 
 		##print encoded_url, "queued for insertion"
 
-		maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls)
+		maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls, num_urls_in_item)
 
 	print_progress(n, start, inserted, already)
-	maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls)
+	maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls, num_urls_in_item)
 
 
 def main():
 	db_path = sys.argv[1]
 	items_root = sys.argv[2]
+	# Use ~200 for feeds that are unlikely to 404, ~5000 for those that are
+	num_urls_in_item = int(sys.argv[3])
 
 	db = open_db(db_path)
 	new_encoded_urls_packed = db.get("$new_encoded_urls$")
@@ -209,7 +208,7 @@ def main():
 	print "Loaded %d new_encoded_urls from db" % (len(new_encoded_urls),)
 
 	try:
-		process_urls(db, items_root, sys.stdin, new_encoded_urls)
+		process_urls(db, items_root, sys.stdin, new_encoded_urls, num_urls_in_item)
 	finally:
 		db.put("$new_encoded_urls$", "\x00".join(new_encoded_urls))
 		# Not enough URLs for a work item, so store them for next time
