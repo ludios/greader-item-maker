@@ -1,0 +1,9 @@
+#!/usr/bin/python
+
+import sys
+
+for line in sys.stdin:
+	sys.stdout.write(line)
+	lowered = line.lower()
+	if lowered != line:
+		sys.stdout.write(lowered)
