@@ -113,6 +113,77 @@ def maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls, num_urls_in_
 		insert_new_encoded_urls(db, items_root, new_encoded_urls)
 
 
+class DBWithCachedIterator(object):
+	"""
+	As a performance optimization, reuses a db iterator for your
+	has() calls (not get()), but throws it away before writing.
+
+	We don't actually need the snapshot functionality of a leveldb
+	iterator in this program.  It is actually very dangerous to keep
+	a leveldb iterator around because it will prevent leveldb from
+	writing to its sorted tree, eventually grinding it to a halt.
+	"""
+	__slots__ = ['db', 'verify_checksums', 'fill_cache', '_iterator']
+
+	def __init__(self, db, verify_checksums=False, fill_cache=True):
+		self.db = db
+		self.verify_checksums = verify_checksums
+		self.fill_cache = fill_cache
+		self._iterator = None
+
+
+	def _cache_iterator(self):
+		self._iterator = self.db.iterator(
+			verify_checksums=self.verify_checksums,
+			fill_cache=self.fill_cache)
+
+
+	def _destroy_iterator(self):
+		self._iterator.close()
+		self._iterator = None
+
+
+	def has(self, key):
+		if not self._iterator:
+			self._cache_iterator()
+		self._iterator.seek(key)
+		return self._iterator.valid() and self._iterator.key() == key
+
+
+	def get(self, key):
+		return self.db.get(
+			key,
+			verify_checksums=self.verify_checksums,
+			fill_cache=self.fill_cache)
+
+
+	def write(self, batch, sync=False):
+		if self._iterator:
+			self._destroy_iterator()
+		self.db.write(batch, sync)
+
+
+	def put(self, key, value, sync=False):
+		if self._iterator:
+			self._destroy_iterator()
+		self.db.put(key, value, sync)
+
+
+	def putTo(self, batch, key, value):
+		return self.db.putTo(batch, key, value)
+
+
+	def newBatch(self):
+		return self.db.newBatch()
+
+
+	def close(self):
+		if self._iterator:
+			self._destroy_iterator()
+		return self.db.close()
+
+
+
 def open_db(db_path):
 	return leveldb.DB(
 		db_path,
@@ -173,14 +244,6 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 		assert feed_url.startswith("http://") or feed_url.startswith("https://"), feed_url
 		encoded_url = urllib.quote_plus(feed_url)
 		key = reversed_encoded_url(encoded_url)
-		# Do *not* try to speed up .has() by keeping an iterator around; not
-		# only is that incorrect (because the iterator is a snapshot of the data and
-		# will cause us to assign a URL to multiple items but clobber the old
-		# value), but also because leveldb performance drops off a cliff when
-		# you keep an old iterator around and are writing tons of data.
-		#
-		# TODO: Do use an iterator, but .close() it before we write; get a new
-		# one after we write.  (This might help performance ~10%.)
 		if db.has(key):
 			already += 1
 			continue
