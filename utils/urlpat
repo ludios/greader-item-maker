@@ -2,7 +2,7 @@
 
 import sys
 
-patterns = sys.argv[1].split(',')
+patterns = sys.argv[1:]
 
 def expand_http_https(patterns):
 	for p in patterns:
