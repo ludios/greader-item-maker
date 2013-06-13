@@ -1,0 +1,28 @@
+#!/usr/bin/python
+
+import sys
+
+patterns = sys.argv[1].split(',')
+
+def expand_http_https(patterns):
+	for p in patterns:
+		if p.startswith('https?://'):
+			yield p.replace('https?://', 'http://', 1)
+			yield p.replace('https?://', 'https://', 1)
+		else:
+			yield p
+
+def expand_optional_trailing_slash(patterns):
+	for p in patterns:
+		if p.endswith('/?'):
+			yield p[:-2]
+			yield p[:-1]
+		else:
+			yield p
+
+expanded_patterns = list(expand_optional_trailing_slash(expand_http_https(patterns)))
+
+for line in sys.stdin:
+	parts = line.rstrip().split("\t")
+	for p in expanded_patterns:
+		print p % tuple(parts)
