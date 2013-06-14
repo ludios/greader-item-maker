@@ -97,7 +97,7 @@ def insert_new_encoded_urls(db, items_root, new_encoded_urls):
 		raise RuntimeError("item_id is %r but %r already exists" % (item_id, item_fname))
 
 	batch = db.newBatch()
-	for u in new_encoded_urls:
+	for u in sorted(new_encoded_urls):
 		db.putTo(batch, reversed_encoded_url(u), packed_next_item_id)
 	db.putTo(batch, "$next_item_id$", pack("<I", item_id + 1))
 	db.write(batch)
@@ -105,7 +105,7 @@ def insert_new_encoded_urls(db, items_root, new_encoded_urls):
 	# The item we write has the normal *not* reversed URLs
 	write_item(items_root, item_id, new_encoded_urls)
 
-	del new_encoded_urls[:]
+	new_encoded_urls.clear()
 
 
 def maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls, num_urls_in_item):
@@ -243,11 +243,10 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 			continue
 		assert feed_url.startswith("http://") or feed_url.startswith("https://"), feed_url
 		encoded_url = urllib.quote_plus(feed_url)
-		key = reversed_encoded_url(encoded_url)
-		if db.has(key):
+		if encoded_url in new_encoded_urls or db.has(reversed_encoded_url(encoded_url)):
 			already += 1
 			continue
-		new_encoded_urls.append(encoded_url)
+		new_encoded_urls.add(encoded_url)
 		inserted += 1
 
 		##print encoded_url, "queued for insertion"
@@ -273,9 +272,9 @@ def main():
 	db = open_db(db_path)
 	new_encoded_urls_packed = db.get("$new_encoded_urls$")
 	if new_encoded_urls_packed: # only want it if it's not None or ""
-		new_encoded_urls = new_encoded_urls_packed.split("\x00")
+		new_encoded_urls = set(new_encoded_urls_packed.split("\x00"))
 	else:
-		new_encoded_urls = []
+		new_encoded_urls = set()
 
 	print "Loaded %d new_encoded_urls from db" % (len(new_encoded_urls),)
 
