@@ -41,7 +41,7 @@ def write_item(items_root, item_id, encoded_urls):
 	try_makedirs(parent(fname))
 	f = gzip.open(fname + ".tmp", "wb")
 	try:
-		f.write("\n".join(encoded_urls) + "\n")
+		f.write("\n".join(sorted(encoded_urls)) + "\n")
 	finally:
 		f.close()
 	assert not os.path.exists(fname), fname
@@ -97,7 +97,7 @@ def insert_new_encoded_urls(db, items_root, new_encoded_urls):
 		raise RuntimeError("item_id is %r but %r already exists" % (item_id, item_fname))
 
 	batch = db.newBatch()
-	for u in sorted(new_encoded_urls):
+	for u in new_encoded_urls:
 		db.putTo(batch, reversed_encoded_url(u), packed_next_item_id)
 	db.putTo(batch, "$next_item_id$", pack("<I", item_id + 1))
 	db.write(batch)
