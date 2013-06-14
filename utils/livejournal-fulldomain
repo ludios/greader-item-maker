@@ -1,0 +1,1 @@
+urlpat 'http://%s/data/rss/?' 'http://%s/data/atom/?'
