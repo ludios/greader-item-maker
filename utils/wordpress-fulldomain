@@ -1,0 +1,1 @@
+urlpat 'https?://%s/feed/?' 'https?://%s/comments/feed/?'
