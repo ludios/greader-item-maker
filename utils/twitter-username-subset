@@ -1,0 +1,1 @@
+andlower | urlpat 'http://twitter.com/statuses/user_timeline/%s.rss'
