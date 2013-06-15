@@ -1,1 +1,1 @@
-urlpat 'https?://%s/feed/?' 'https?://%s/comments/feed/?'
+urlpat 'https?://%s/feed/?' 'https?://%s/comments/feed/?' 'http://%s/feed/atom/' 'http://%s/feed/rss/'
