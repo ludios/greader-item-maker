@@ -1,0 +1,1 @@
+urlpat '%s/feed/?' '%s/feed/atom/' '%s/feed/rss/' '%s/comments/feed/?'
