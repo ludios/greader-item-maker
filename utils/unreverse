@@ -16,7 +16,13 @@ def is_port(s):
 for line in sys.stdin:
 	url = line.rstrip()
 	rest, schema =  url.rsplit(":", 1)
-	domain, path = rest.split('/', 1)
+
+	try:
+		domain, path = rest.split('/', 1)
+	except ValueError:
+		domain = rest
+		path = ''
+
 	try:
 		maybe_path, maybe_port = path.rsplit(":", 1)
 	except ValueError:
@@ -27,4 +33,5 @@ for line in sys.stdin:
 			port = maybe_port
 		else:
 			port = None
+
 	sys.stdout.write(schema + '://' + '.'.join(domain.split('.')[::-1]) + (':' + port if port is not None else '') + '/' + path + "\n")
