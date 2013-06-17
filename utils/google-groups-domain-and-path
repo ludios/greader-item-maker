@@ -1,0 +1,1 @@
+urlpat 'https?://%s/feed/rss_v2_0_msgs.xml' 'https?://%s/feed/atom_v1_0_msgs.xml'

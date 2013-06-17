@@ -1,0 +1,1 @@
+urlpat 'http://rss.%s/rss' 'http://%s/messages?rss=1'

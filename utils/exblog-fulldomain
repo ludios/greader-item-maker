@@ -1,0 +1,1 @@
+sed 's/\.exblog\.jp$//g' | urlpat 'http://%s.exblog.jp/index.xml' 'http://%s.exblog.jp/atom.xml' 'http://rss.exblog.jp/rss/exblog/%s/index.xml' 'http://rss.exblog.jp/rss/exblog/%s/atom.xml'

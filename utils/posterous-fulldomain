@@ -1,0 +1,1 @@
+urlpat 'https?://%s/rss.xml'
