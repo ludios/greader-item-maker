@@ -1,1 +1,1 @@
-urlpat '%s/feed/?' '%s/feed/atom/' '%s/feed/rss/' '%s/comments/feed/?'
+urlpat '%s/feed/?' '%s/feed/atom/' '%s/feed/rss/' '%s/comments/feed/?' '%s/?feed=rss2' '%s/?feed=atom' '%s/?feed=comments-rss2' '%s/wp-rss2.php' '%s/wp-atom.php'

@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+import sys
+
+for line in sys.stdin:
+	url = line.rstrip()
+	try:
+		schema, _, domain, rest = url.split("/", 3)
+	except ValueError:
+		schema, _, domain = url.split("/", 2)
+		rest = ''
+	sys.stdout.write(schema + '//' + domain.lower() + '/' + rest + '\n')

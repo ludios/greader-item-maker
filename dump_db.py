@@ -3,7 +3,8 @@
 import sys
 from struct import pack
 
-from inserter_maker import open_db
+import urllib
+from inserter_maker import open_db, unreversed_encoded_url
 
 
 def main():
@@ -11,7 +12,9 @@ def main():
 	start = sys.argv[2]
 	db = open_db(db_path)
 	for k, v in db.iterator().seek(start):
-		print repr(k), repr(v)
+		if not k.startswith(start):
+			break
+		print urllib.unquote_plus(unreversed_encoded_url(k))
 	db.close()
 
 

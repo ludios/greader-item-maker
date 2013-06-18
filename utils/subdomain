@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+import sys
+
+for line in sys.stdin:
+	domain = line.rstrip()
+	try:
+		subdomain, domain, tld = domain.split(".", 2)
+	except ValueError:
+		pass
+	else:
+		print subdomain

@@ -1,0 +1,19 @@
+#!/usr/bin/python
+"""
+Decodes the JSON-encoded (but missing " wrapping) URLs in our .hrefs.bz2 files
+"""
+
+import sys
+
+try:
+	import simplejson as json
+except ImportError:
+	import json
+
+for line in sys.stdin:
+	try:
+		encoded = line.rstrip().decode("utf-8")
+	except UnicodeDecodeError:
+		encoded = line.rstrip().decode("latin-1")		
+	decoded = json.loads(u'"' + encoded + u'"')
+	print decoded.encode("utf-8")
