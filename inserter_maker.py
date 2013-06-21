@@ -236,6 +236,9 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 		feed_url = feed_url.rstrip()
 		if not feed_url:
 			continue
+		if feed_url.startswith("ftp://"):
+			print "Skipping FTP feed %r" % (feed_url,)
+			continue
 		try:
 			feed_url.decode('ascii')
 		except UnicodeDecodeError:
