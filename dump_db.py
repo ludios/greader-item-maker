@@ -12,6 +12,8 @@ def main():
 	start = sys.argv[2]
 	db = open_db(db_path)
 	for k, v in db.iterator().seek(start):
+		if k.startswith('$'):
+			continue
 		if not k.startswith(start):
 			break
 		print urllib.unquote_plus(unreversed_encoded_url(k))

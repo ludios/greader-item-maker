@@ -1,0 +1,1 @@
+urlpat 'http://%s/index.rdf' 'http://%s/atom.xml'
