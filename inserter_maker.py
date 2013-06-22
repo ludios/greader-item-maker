@@ -263,7 +263,6 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 def main():
 	db_path = sys.argv[1]
 	items_root = sys.argv[2]
-	# Use ~200 for feeds that are unlikely to 404, ~5000 for those that are
 	num_urls_in_item = int(sys.argv[3])
 	assert 10 <= num_urls_in_item <= 20000, num_urls_in_item
 	try:
