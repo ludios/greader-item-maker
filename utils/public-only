@@ -1,0 +1,1 @@
+grep -i -P -v '\/private\/|private=|/private-|secret=|pass=|password=|token=|key=|email=|\.private\.atom|\.private\.rss'

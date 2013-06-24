@@ -1,0 +1,6 @@
+urlpat \
+'http://%(item_lower)s.xanga.com/rss/?' \
+'http://www.xanga.com/rss.aspx?user=%(item)s' \
+'http://www.xanga.com/rss.aspx?user=%(item_lower)s' \
+'http://www.xanga.com/%(item)s/rss' \
+'http://www.xanga.com/%(item_lower)s/rss' | uniq

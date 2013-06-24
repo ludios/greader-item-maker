@@ -1,0 +1,7 @@
+grep -P -o --no-filename "xmlUrl=[\"\'][^\"\']+[\"\']" | \
+sed 's,feed://http//,http://,g' | \
+sed 's,feed:http:,http:,g' | \
+sed 's,feed://,http://,g' | \
+sed 's,itpc://,http://,g' | \
+from-to-skip-bad '"' '"' | \
+decode-entities

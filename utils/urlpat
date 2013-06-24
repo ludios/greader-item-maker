@@ -23,6 +23,9 @@ def expand_optional_trailing_slash(patterns):
 expanded_patterns = list(expand_optional_trailing_slash(expand_http_https(patterns)))
 
 for line in sys.stdin:
-	parts = line.rstrip().split("\t")
+	item = line.rstrip()
 	for p in expanded_patterns:
-		print p % tuple(parts)
+		if '%s' in p:
+			print p % (item,)
+		else:
+			print p % dict(item=item, item_lower=item.lower())

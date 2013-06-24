@@ -1,0 +1,10 @@
+subdomain | urlpat \
+'http://feed.pixnet.net/blog/posts/rss/%s' \
+'http://feed.pixnet.net/blog/posts/atom/%s' \
+'http://feed.pixnet.net/blog/comments/rss/%s' \
+'http://%s.pixnet.net/blog/feed/rss' \
+'http://%s.pixnet.net/blog/feed/atom' \
+'http://%s.pixnet.net/blog/comments/feed'
+
+# Exists but not seen in the wild:
+# 'http://feed.pixnet.net/blog/comments/atom/%s' \

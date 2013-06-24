@@ -1,0 +1,10 @@
+#!/usr/bin/python
+
+import sys
+
+for line in sys.stdin:
+	try:
+		line.decode("ascii")
+	except UnicodeDecodeError:
+		sys.stderr.write(repr(line) + "\n")
+		raise

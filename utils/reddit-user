@@ -1,0 +1,1 @@
+andlower | urlpat 'http://www.reddit.com/user/%s/.rss' 'http://www.reddit.com/user/%s/comments/.rss' 'http://www.reddit.com/user/%s/submitted/.rss'

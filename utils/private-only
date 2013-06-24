@@ -1,0 +1,1 @@
+eval $(cat public-only | sed 's/ -v / /g')
