@@ -1,1 +1,1 @@
-eval $(cat public-only | sed 's/ -v / /g')
+eval $(cat $(dirname "$0")/public-only | sed 's/ -v / /g')
