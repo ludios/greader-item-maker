@@ -1,1 +1,1 @@
-grep -i -P -v '\/private\/|private=|/private-|secret=|pass=|password=|token=|key=|email=|\.private\.atom|\.private\.rss'
+grep -i -P -v '\/private\/|private=|/private-|secret=|pass=|password=|token=|[\?\&]tok=|key=|email=|DossierDID=|\.private\.atom|\.private\.rss|mail2feed\.org/|\/thinkup\/crawler\/.*?un=|reddit\.com/.*?[0-9a-f]{40}|dopplr\.com/.*?[0-9a-f]{40}'

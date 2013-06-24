@@ -4,4 +4,6 @@ sed 's,feed:http:,http:,g' | \
 sed 's,feed://,http://,g' | \
 sed 's,itpc://,http://,g' | \
 from-to-skip-bad '"' '"' | \
-decode-entities
+decode-entities | \
+grep -P '^https?://'
+# Need grep at the end because some people have relative URLs and other garbage in their OPMLs
