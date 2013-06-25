@@ -44,6 +44,8 @@ path_to_action = {
 	,'qzone.qq.com': DOMAIN
 	,'blog.163.com': DOMAIN
 	,'inube.com': DOMAIN
+	,'rss.my.nero.com/user/': FULL_URL
+	,'my.nero.com': DOMAIN
 	,'feed43.com': FIRST_SLASH
 	,'static.blog4ever.com': FULL_URL
 	,'www.xanga.com': FULL_URL
@@ -101,9 +103,6 @@ for k, action in path_to_action.iteritems():
 for k, action in _domain_to_action.iteritems():
 	_domain_to_action[k] = sorted(_domain_to_action[k], key=lambda x: len(x), reverse=True)
 
-# TODO: subdomain should not get "www" - get next segment instead (needed for blogspot.com)
-
-# TODO: should *_SLASH get rid of ? and & params like href="/blog/kuni&rss20=1"
 
 def up_domain_variants(domain):
 	variants = []
@@ -148,6 +147,12 @@ assert get_action("bandcamp.com", "fee") == DOMAIN
 assert get_action("x.bandcamp.com", "") == DOMAIN
 
 
+def without_query(rest):
+	rest = rest.split("?", 1)[0]
+	rest = rest.split("&", 1)[0]
+	return rest
+
+
 def main():
 	if sys.argv[1:] == ["print_paths"]:
 		print "\n".join(sorted(path_to_action.keys()))
@@ -174,13 +179,13 @@ def main():
 		elif action == DOMAIN:
 			print schema + "//" + domain
 		elif action == FIRST_SLASH:
-			print schema + "//" + domain + "/" + rest.split("/", 1)[0]
+			print schema + "//" + domain + "/" + without_query(rest.split("/", 1)[0])
 		elif action == SECOND_SLASH:
-			print schema + "//" + domain + "/" + "/".join(rest.split("/", 2)[:2])
+			print schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:2]))
 		elif action == THIRD_SLASH:
-			print schema + "//" + domain + "/" + "/".join(rest.split("/", 2)[:3])
+			print schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:3]))
 		elif action == FOURTH_SLASH:
-			print schema + "//" + domain + "/" + "/".join(rest.split("/", 2)[:4])
+			print schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:4]))
 
 
 if __name__ == '__main__':
