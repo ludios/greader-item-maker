@@ -175,17 +175,21 @@ def main():
 			# Don't want this URL
 			continue
 		elif action == FULL_URL:
-			print url
+			maybe_print = url
 		elif action == DOMAIN:
-			print schema + "//" + domain
+			maybe_print = schema + "//" + domain
 		elif action == FIRST_SLASH:
-			print schema + "//" + domain + "/" + without_query(rest.split("/", 1)[0])
+			maybe_print = schema + "//" + domain + "/" + without_query(rest.split("/", 1)[0])
 		elif action == SECOND_SLASH:
-			print schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:2]))
+			maybe_print = schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:2]))
 		elif action == THIRD_SLASH:
-			print schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:3]))
+			maybe_print = schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:3]))
 		elif action == FOURTH_SLASH:
-			print schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:4]))
+			maybe_print = schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:4]))
+
+		if last_printed != maybe_print:
+			print maybe_print
+			last_printed = maybe_print
 
 
 if __name__ == '__main__':
