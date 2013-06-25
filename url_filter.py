@@ -40,7 +40,7 @@ path_to_action = {
 	,'blog.hexun.com.tw': SUBDOMAIN
 	,'blog.livedoor.jp': FIRST_SLASH
 	,'altervista.org': SUBDOMAIN
-	,'feeds.qzone.qq.com/cgi-bin': SECOND_SLASH
+	,'feeds.qzone.qq.com/cgi-bin': FULL_URL
 	,'qzone.qq.com': SUBDOMAIN
 	,'blog.163.com': SUBDOMAIN
 	,'inube.com': SUBDOMAIN
@@ -68,6 +68,25 @@ path_to_action = {
 	,'rsspect.com': FULL_URL
 	,'buzz.googleapis.com': FULL_URL
 	,'craigslist.org': SUBDOMAIN_AND_FIRST_SLASH
+	,'www.reddit.com/user': SECOND_SLASH
+	,'pay.reddit.com/user': SECOND_SLASH
+	,'www.reddit.com/r': SECOND_SLASH
+	,'pay.reddit.com/r': SECOND_SLASH
+	,'blog.myspace.com/blog/rss.cfm': FULL_URL
+	,'spaces.live.com': SUBDOMAIN
+	,'rss.searchyc.com': FULL_URL
+	,'lesswrong.com/user': SECOND_SLASH
+	,'www.quora.com': FIRST_SLASH
+	,'www.google.com/reader/public': FULL_URL
+	# skipped kickstarter
+	,'del.icio.us/rss': FULL_URL
+	,'del.icio.us/tag': SECOND_SLASH
+	,'youtube.com/user': SECOND_SLASH
+	,'youtube.com/rss': FULL_URL
+	,'gdata.youtube.com/feeds/': FULL_URL
+	,'multiply.com': SUBDOMAIN
+	,'bandcamp.com/feed': FULL_URL
+	,'bandcamp.com': SUBDOMAIN
 }
 
 # TODO: subdomain should not get "www" - get next segment instead (needed for blogspot.com)
