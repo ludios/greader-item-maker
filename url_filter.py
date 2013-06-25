@@ -89,6 +89,7 @@ path_to_action = {
 	,'multiply.com': DOMAIN
 	,'bandcamp.com/feed/': FULL_URL
 	,'bandcamp.com': DOMAIN
+	,'hatena.ne.jp': FIRST_SLASH
 }
 
 _domain_to_action = defaultdict(list)
