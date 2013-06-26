@@ -160,14 +160,11 @@ def get_action(domain, rest):
 		return None
 
 	action = None
-	if len(actions) == 1:
-		action = actions[0][1]
-	else:
-		for action_path, maybe_action in actions:
-			##print rest, action_path
-			if rest.startswith(action_path):
-				action = maybe_action
-				break
+	for action_path, maybe_action in actions:
+		##print rest, action_path
+		if rest.startswith(action_path):
+			action = maybe_action
+			break
 
 	return action
 
