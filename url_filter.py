@@ -97,6 +97,14 @@ path_to_action = {
 	,'twitter.com/statuses/user_timeline/': FULL_URL
 	,'rss.egloos.com': FULL_URL
 	,'egloos.com': DOMAIN
+	,'podomatic.com': DOMAIN
+	,'secuobs.com/revue/xml/': FULL_URL
+	,'blogs.com': DOMAIN
+	,'mysyndicaat.com/myfeed/feed/': FULL_URL
+	,'blog.sina.com.cn/rss/': FULL_URL
+	,'blog.sina.com.cn': FIRST_SLASH
+	,'loadaveragezero.com/drx/rss/': FULL_URL
+	,'feedsky.com': FULL_URL
 }
 
 _domain_to_action = defaultdict(list)
