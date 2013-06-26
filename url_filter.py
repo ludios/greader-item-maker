@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+import pprint
 from collections import defaultdict
 
 DOMAIN, \
@@ -131,6 +132,8 @@ for k, action in path_to_action.iteritems():
 for k, action in _domain_to_action.iteritems():
 	_domain_to_action[k] = sorted(_domain_to_action[k], key=lambda x: len(x), reverse=True)
 
+##pprint.pprint(dict(_domain_to_action))
+
 
 def up_domain_variants(domain):
 	variants = []
@@ -161,8 +164,10 @@ def get_action(domain, rest):
 		action = actions[0][1]
 	else:
 		for action_path, maybe_action in actions:
+			##print rest, action_path
 			if rest.startswith(action_path):
 				action = maybe_action
+				break
 
 	return action
 
@@ -170,7 +175,7 @@ def get_action(domain, rest):
 assert get_action("blah.com", "") == None
 assert get_action("youtube.com", "user/blah") == SECOND_SLASH
 assert get_action("youtube.com", "usx") == None
-assert get_action("bandcamp.com", "feed/blah") == FULL_URL
+assert get_action("bandcamp.com", "feed/blah") == FULL_URL, get_action("bandcamp.com", "feed/blah")
 assert get_action("bandcamp.com", "fee") == DOMAIN
 assert get_action("x.bandcamp.com", "") == DOMAIN
 
