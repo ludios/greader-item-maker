@@ -90,6 +90,13 @@ path_to_action = {
 	,'bandcamp.com/feed/': FULL_URL
 	,'bandcamp.com': DOMAIN
 	,'hatena.ne.jp': FIRST_SLASH
+	,'vimeo.com': FIRST_SLASH # needs to be filtered afterwards to get usernames and exclude video IDs
+	,'flickr.com/services/feeds/': FULL_URL
+	,'flickr.com/recent_comments_feed.gne': FULL_URL
+	,'api.twitter.com/1/statuses/': FULL_URL
+	,'twitter.com/statuses/user_timeline/': FULL_URL
+	,'rss.egloos.com': FULL_URL
+	,'egloos.com': DOMAIN
 }
 
 _domain_to_action = defaultdict(list)
