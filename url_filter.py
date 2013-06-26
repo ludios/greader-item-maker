@@ -105,6 +105,18 @@ path_to_action = {
 	,'blog.sina.com.cn': FIRST_SLASH
 	,'loadaveragezero.com/drx/rss/': FULL_URL
 	,'feedsky.com': FULL_URL
+	,'rss.pics.livedoor.com': FULL_URL
+	,'news.livedoor.com/rss/': FULL_URL
+	,'podbean.com': DOMAIN
+	,'blogs.msdn.com': FIRST_SLASH
+	,'libsyn.com': DOMAIN
+	,'prlog.org/rss/': FULL_URL
+	,'npr.org/rss/': FULL_URL
+	# TODO: spaces.msn.com; has annoying pattern
+	,'blog.yam.com/rss.php': FULL_URL
+	,'blog.yam.com': FIRST_SLASH
+	# TODO: news.google.com, needs filter on output=(rss|atom)
+	,'webcast.berkeley.edu/media/common/rss/': FULL_URL
 }
 
 _domain_to_action = defaultdict(list)
