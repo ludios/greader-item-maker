@@ -2,7 +2,7 @@
 
 import sys
 import pprint
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 
 DOMAIN, \
 FIRST_SLASH, \
@@ -11,128 +11,130 @@ THIRD_SLASH, \
 FOURTH_SLASH, \
 FULL_URL = range(6)
 
-path_to_action = {
-	 'tumblr.com': DOMAIN
-	,'community.livejournal.com': FIRST_SLASH
-	,'www.livejournal.com/users/': SECOND_SLASH
-	,'www.livejournal.com/community/': SECOND_SLASH
-	,'livejournal.com': DOMAIN
-	,'wordpress.com': DOMAIN
-	,'blogspot.com': DOMAIN
-	,'blogger.com/feeds/': SECOND_SLASH
-	,'feeds.feedburner.com': FIRST_SLASH
-	,'feeds2.feedburner.com': FIRST_SLASH
-	,'feeds.rapidfeeds.com': FIRST_SLASH
-	,'posterous.com': DOMAIN
-	,'groups.google.com/group/': SECOND_SLASH
-	,'groups.yahoo.com/group/': SECOND_SLASH
-	,'typepad.com': FIRST_SLASH
-	,'typepad.jp': FIRST_SLASH
-	,'blog.roodoo.com': FIRST_SLASH
-	,'diarynote.jp': DOMAIN
-	,'ameblo.jp': FIRST_SLASH
-	,'rssblog.ameba.jp': FIRST_SLASH
-	,'wretch.cc/blog/': SECOND_SLASH
-	,'formspring.me': FIRST_SLASH
-	,'blog.shinobi.jp': DOMAIN
-	,'rss.exblog.jp/rss/exblog/': THIRD_SLASH
-	,'exblog.jp': DOMAIN
-	,'blog.hexun.com': DOMAIN
-	,'blog.hexun.com.tw': DOMAIN
-	,'blog.livedoor.jp': FIRST_SLASH
-	,'altervista.org': DOMAIN
-	,'feeds.qzone.qq.com/cgi-bin/': FULL_URL
-	,'qzone.qq.com': DOMAIN
-	,'blog.163.com': DOMAIN
-	,'inube.com': DOMAIN
-	,'rss.my.nero.com/user/': FULL_URL
-	,'my.nero.com': DOMAIN
-	,'feed43.com': FIRST_SLASH
-	,'static.blog4ever.com': FULL_URL
-	,'www.xanga.com': FULL_URL
-	,'xanga.com': DOMAIN
-	,'feed.pixnet.net/blog/posts/rss/': FOURTH_SLASH
-	,'feed.pixnet.net/blog/posts/atom/': FOURTH_SLASH
-	,'pixnet.net': DOMAIN
-	,'twitter.com': FIRST_SLASH
-	,'rss2lj.net': FULL_URL
-	,'gplusrss.com': FULL_URL
-	,'googleplusfeed.net': FULL_URL
-	,'twitter-rss.com': FULL_URL
-	,'dreamwidth.org': DOMAIN
-	,'blog.com': DOMAIN
-	,'pipes.yahoo.com': FULL_URL
-	,'page2rss.com': FULL_URL
-	,'boards.4chan.org': FIRST_SLASH
-	,'dis.4chan.org/atom/': SECOND_SLASH
-	,'vox.com': DOMAIN
-	,'jux.com': DOMAIN
-	,'at.webry.info': DOMAIN
-	,'rsspect.com': FULL_URL
-	,'buzz.googleapis.com': FULL_URL
-	,'craigslist.org': FIRST_SLASH
-	,'www.reddit.com/user/': SECOND_SLASH
-	,'pay.reddit.com/user/': SECOND_SLASH
-	,'www.reddit.com/r/': SECOND_SLASH
-	,'pay.reddit.com/r/': SECOND_SLASH
-	,'blog.myspace.com/blog/rss.cfm': FULL_URL
-	,'spaces.live.com': DOMAIN
-	,'rss.searchyc.com': FULL_URL
-	,'lesswrong.com/user/': SECOND_SLASH
-	,'www.quora.com': FIRST_SLASH
-	,'www.google.com/reader/public/': FULL_URL
+Extraction = namedtuple('Extraction', 'keep feedfn')
+
+path_to_extraction = {
+	 'tumblr.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'community.livejournal.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'www.livejournal.com/users/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'www.livejournal.com/community/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'livejournal.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'wordpress.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'blogspot.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'blogger.com/feeds/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'feeds.feedburner.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'feeds2.feedburner.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'feeds.rapidfeeds.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'posterous.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'groups.google.com/group/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'groups.yahoo.com/group/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'typepad.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'typepad.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'blog.roodoo.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'diarynote.jp': Extraction(keep=DOMAIN, feedfn=None)
+	,'ameblo.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'rssblog.ameba.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'wretch.cc/blog/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'formspring.me': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'blog.shinobi.jp': Extraction(keep=DOMAIN, feedfn=None)
+	,'rss.exblog.jp/rss/exblog/': Extraction(keep=THIRD_SLASH, feedfn=None)
+	,'exblog.jp': Extraction(keep=DOMAIN, feedfn=None)
+	,'blog.hexun.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'blog.hexun.com.tw': Extraction(keep=DOMAIN, feedfn=None)
+	,'blog.livedoor.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'altervista.org': Extraction(keep=DOMAIN, feedfn=None)
+	,'feeds.qzone.qq.com/cgi-bin/': Extraction(keep=FULL_URL, feedfn=None)
+	,'qzone.qq.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'blog.163.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'inube.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'rss.my.nero.com/user/': Extraction(keep=FULL_URL, feedfn=None)
+	,'my.nero.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'feed43.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'static.blog4ever.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'www.xanga.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'xanga.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'feed.pixnet.net/blog/posts/rss/': Extraction(keep=FOURTH_SLASH, feedfn=None)
+	,'feed.pixnet.net/blog/posts/atom/': Extraction(keep=FOURTH_SLASH, feedfn=None)
+	,'pixnet.net': Extraction(keep=DOMAIN, feedfn=None)
+	,'twitter.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'rss2lj.net': Extraction(keep=FULL_URL, feedfn=None)
+	,'gplusrss.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'googleplusfeed.net': Extraction(keep=FULL_URL, feedfn=None)
+	,'twitter-rss.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'dreamwidth.org': Extraction(keep=DOMAIN, feedfn=None)
+	,'blog.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'pipes.yahoo.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'page2rss.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'boards.4chan.org': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'dis.4chan.org/atom/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'vox.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'jux.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'at.webry.info': Extraction(keep=DOMAIN, feedfn=None)
+	,'rsspect.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'buzz.googleapis.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'craigslist.org': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'www.reddit.com/user/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'pay.reddit.com/user/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'www.reddit.com/r/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'pay.reddit.com/r/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'blog.myspace.com/blog/rss.cfm': Extraction(keep=FULL_URL, feedfn=None)
+	,'spaces.live.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'rss.searchyc.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'lesswrong.com/user/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'www.quora.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'www.google.com/reader/public/': Extraction(keep=FULL_URL, feedfn=None)
 	# skipped kickstarter
-	,'del.icio.us/rss/': FULL_URL
-	,'del.icio.us/tag/': SECOND_SLASH
-	,'youtube.com/user/': SECOND_SLASH
-	,'youtube.com/rss/': FULL_URL
-	,'gdata.youtube.com/feeds/': FULL_URL
-	,'multiply.com': DOMAIN
-	,'bandcamp.com/feed/': FULL_URL
-	,'bandcamp.com': DOMAIN
-	,'hatena.ne.jp': FIRST_SLASH
-	,'vimeo.com': FIRST_SLASH # needs to be filtered afterwards to get usernames and exclude video IDs
-	,'flickr.com/services/feeds/': FULL_URL
-	,'flickr.com/recent_comments_feed.gne': FULL_URL
-	,'api.twitter.com/1/statuses/': FULL_URL
-	,'twitter.com/statuses/user_timeline/': FULL_URL
-	,'rss.egloos.com': FULL_URL
-	,'egloos.com': DOMAIN
-	,'podomatic.com': DOMAIN
-	,'secuobs.com/revue/xml/': FULL_URL
-	,'blogs.com': DOMAIN
-	,'mysyndicaat.com/myfeed/feed/': FULL_URL
-	,'blog.sina.com.cn/rss/': FULL_URL
-	,'blog.sina.com.cn': FIRST_SLASH
-	,'loadaveragezero.com/drx/rss/': FULL_URL
-	,'feedsky.com': FULL_URL
-	,'rss.pics.livedoor.com': FULL_URL
-	,'news.livedoor.com/rss/': FULL_URL
-	,'podbean.com': DOMAIN
-	,'blogs.msdn.com': FIRST_SLASH
-	,'libsyn.com': DOMAIN
-	,'prlog.org/rss/': FULL_URL
-	,'npr.org/rss/': FULL_URL
+	,'del.icio.us/rss/': Extraction(keep=FULL_URL, feedfn=None)
+	,'del.icio.us/tag/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'youtube.com/user/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'youtube.com/rss/': Extraction(keep=FULL_URL, feedfn=None)
+	,'gdata.youtube.com/feeds/': Extraction(keep=FULL_URL, feedfn=None)
+	,'multiply.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'bandcamp.com/feed/': Extraction(keep=FULL_URL, feedfn=None)
+	,'bandcamp.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'hatena.ne.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'vimeo.com': FIRST_SLASH # needs to be filtered afterwards to get usernames and exclude video Extraction(keep=IDs, feedfn=None)
+	,'flickr.com/services/feeds/': Extraction(keep=FULL_URL, feedfn=None)
+	,'flickr.com/recent_comments_feed.gne': Extraction(keep=FULL_URL, feedfn=None)
+	,'api.twitter.com/1/statuses/': Extraction(keep=FULL_URL, feedfn=None)
+	,'twitter.com/statuses/user_timeline/': Extraction(keep=FULL_URL, feedfn=None)
+	,'rss.egloos.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'egloos.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'podomatic.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'secuobs.com/revue/xml/': Extraction(keep=FULL_URL, feedfn=None)
+	,'blogs.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'mysyndicaat.com/myfeed/feed/': Extraction(keep=FULL_URL, feedfn=None)
+	,'blog.sina.com.cn/rss/': Extraction(keep=FULL_URL, feedfn=None)
+	,'blog.sina.com.cn': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'loadaveragezero.com/drx/rss/': Extraction(keep=FULL_URL, feedfn=None)
+	,'feedsky.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'rss.pics.livedoor.com': Extraction(keep=FULL_URL, feedfn=None)
+	,'news.livedoor.com/rss/': Extraction(keep=FULL_URL, feedfn=None)
+	,'podbean.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'blogs.msdn.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'libsyn.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'prlog.org/rss/': Extraction(keep=FULL_URL, feedfn=None)
+	,'npr.org/rss/': Extraction(keep=FULL_URL, feedfn=None)
 	# TODO: spaces.msn.com; has annoying pattern
-	,'blog.yam.com/rss.php': FULL_URL
-	,'blog.yam.com': FIRST_SLASH
+	,'blog.yam.com/rss.php': Extraction(keep=FULL_URL, feedfn=None)
+	,'blog.yam.com': Extraction(keep=FIRST_SLASH, feedfn=None)
 	# TODO: news.google.com, needs filter on output=(rss|atom)
-	,'webcast.berkeley.edu/media/common/rss/': FULL_URL
+	,'webcast.berkeley.edu/media/common/rss/': Extraction(keep=FULL_URL, feedfn=None)
 }
 
-_domain_to_action = defaultdict(list)
-for k, action in path_to_action.iteritems():
+_domain_to_extraction = defaultdict(list)
+for k, extraction in path_to_extraction.iteritems():
 	try:
 		domain, path = k.split('/', 1)
 	except ValueError:
 		domain = k
 		path = ''
-	_domain_to_action[domain].append((path, action))
+	_domain_to_extraction[domain].append((path, extraction))
 
-for k, action in _domain_to_action.iteritems():
-	_domain_to_action[k] = sorted(_domain_to_action[k], key=lambda x: len(x), reverse=True)
+for k, extraction in _domain_to_extraction.iteritems():
+	_domain_to_extraction[k] = sorted(_domain_to_extraction[k], key=lambda x: len(x), reverse=True)
 
-##pprint.pprint(dict(_domain_to_action))
+##pprint.pprint(dict(_domain_to_extraction))
 
 
 def up_domain_variants(domain):
@@ -152,7 +154,7 @@ def get_action(domain, rest):
 	actions = None
 
 	for domain_variant in up_domain_variants(domain):
-		actions = _domain_to_action.get(domain_variant)
+		actions = _domain_to_extraction.get(domain_variant)
 		if actions:
 			break
 
@@ -166,7 +168,10 @@ def get_action(domain, rest):
 			action = maybe_action
 			break
 
-	return action
+	if action:
+		return action.keep
+
+	return None
 
 
 assert get_action("blah.com", "") == None
@@ -185,7 +190,7 @@ def without_query(rest):
 
 def main():
 	if sys.argv[1:] == ["print_paths"]:
-		print "\n".join(sorted(path_to_action.keys()))
+		print "\n".join(sorted(path_to_extraction.keys()))
 		sys.exit(0)
 
 	last_printed = None
