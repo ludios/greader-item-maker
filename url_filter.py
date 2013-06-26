@@ -13,8 +13,24 @@ FULL_URL = range(6)
 
 Extraction = namedtuple('Extraction', 'keep feedfn')
 
+def httpify(p):
+	return p.replace("https://", "http://", 1)
+
+def last3seg(p): # get only last three segments of domain
+	try:
+		schema, _, domain, rest = p.split("/", 3)
+		segments = domain.split(".")[-3:]
+		return schema + "//" + ".".join(segments) + "/" + rest
+	except ValueError:
+		schema, _, domain = p.split("/", 2)
+		segments = domain.split(".")[-3:]
+		return schema + "//" + ".".join(segments)
+
+def tumblr(p):
+	return [httpify(last3seg(p)) + "/rss"]
+
 path_to_extraction = {
-	 'tumblr.com': Extraction(keep=DOMAIN, feedfn=None)
+	 'tumblr.com': Extraction(keep=DOMAIN, feedfn=tumblr)
 	,'community.livejournal.com': Extraction(keep=FIRST_SLASH, feedfn=None)
 	,'www.livejournal.com/users/': Extraction(keep=SECOND_SLASH, feedfn=None)
 	,'www.livejournal.com/community/': Extraction(keep=SECOND_SLASH, feedfn=None)
@@ -93,7 +109,8 @@ path_to_extraction = {
 	,'bandcamp.com/feed/': Extraction(keep=FULL_URL, feedfn=None)
 	,'bandcamp.com': Extraction(keep=DOMAIN, feedfn=None)
 	,'hatena.ne.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
-	,'vimeo.com': FIRST_SLASH # needs to be filtered afterwards to get usernames and exclude video Extraction(keep=IDs, feedfn=None)
+	# vimeo.com needs to be filtered afterwards to get usernames and exclude video IDs
+	,'vimeo.com': Extraction(keep=FIRST_SLASH, feedfn=None)
 	,'flickr.com/services/feeds/': Extraction(keep=FULL_URL, feedfn=None)
 	,'flickr.com/recent_comments_feed.gne': Extraction(keep=FULL_URL, feedfn=None)
 	,'api.twitter.com/1/statuses/': Extraction(keep=FULL_URL, feedfn=None)
@@ -150,36 +167,33 @@ def up_domain_variants(domain):
 assert up_domain_variants("blah.cnn.com") == ["blah.cnn.com", "cnn.com", "com"]
 
 
-def get_action(domain, rest):
-	actions = None
+def get_extraction(domain, rest):
+	extractions = None
 
 	for domain_variant in up_domain_variants(domain):
-		actions = _domain_to_extraction.get(domain_variant)
-		if actions:
+		extractions = _domain_to_extraction.get(domain_variant)
+		if extractions:
 			break
 
-	if not actions:
+	if not extractions:
 		return None
 
-	action = None
-	for action_path, maybe_action in actions:
+	extraction = None
+	for extraction_path, maybe_extraction in extractions:
 		##print rest, action_path
-		if rest.startswith(action_path):
-			action = maybe_action
+		if rest.startswith(extraction_path):
+			extraction = maybe_extraction
 			break
 
-	if action:
-		return action.keep
-
-	return None
+	return extraction
 
 
-assert get_action("blah.com", "") == None
-assert get_action("youtube.com", "user/blah") == SECOND_SLASH
-assert get_action("youtube.com", "usx") == None
-assert get_action("bandcamp.com", "feed/blah") == FULL_URL, get_action("bandcamp.com", "feed/blah")
-assert get_action("bandcamp.com", "fee") == DOMAIN
-assert get_action("x.bandcamp.com", "") == DOMAIN
+assert get_extraction("blah.com", "") == None
+assert get_extraction("youtube.com", "user/blah") == Extraction(keep=SECOND_SLASH, feedfn=None)
+assert get_extraction("youtube.com", "usx") == None
+assert get_extraction("bandcamp.com", "feed/blah") == Extraction(keep=FULL_URL, feedfn=None)
+assert get_extraction("bandcamp.com", "fee") == Extraction(keep=DOMAIN, feedfn=None)
+assert get_extraction("x.bandcamp.com", "") == Extraction(keep=DOMAIN, feedfn=None)
 
 
 def without_query(rest):
@@ -188,10 +202,16 @@ def without_query(rest):
 	return rest
 
 
+EXTRACT, PRINT_FEED_URLS = range(2)
+
 def main():
 	if sys.argv[1:] == ["print_paths"]:
 		print "\n".join(sorted(path_to_extraction.keys()))
 		sys.exit(0)
+
+	mode = EXTRACT
+	if sys.argv[1:] == ["print_feed_urls"]:
+		mode = PRINT_FEED_URLS
 
 	last_printed = None
 	for line in sys.stdin:
@@ -205,25 +225,34 @@ def main():
 			except ValueError:
 				continue
 
-		action = get_action(domain, rest)
-		if action is None:
+		extraction = get_extraction(domain, rest)
+		if extraction is None:
 			# Don't want this URL
 			continue
-		elif action == FULL_URL:
+
+		##print url, extraction
+		keep = extraction.keep
+		if keep == FULL_URL:
 			maybe_print = url
-		elif action == DOMAIN:
+		elif keep == DOMAIN:
 			maybe_print = schema + "//" + domain
-		elif action == FIRST_SLASH:
+		elif keep == FIRST_SLASH:
 			maybe_print = schema + "//" + domain + "/" + without_query(rest.split("/", 1)[0])
-		elif action == SECOND_SLASH:
+		elif keep == SECOND_SLASH:
 			maybe_print = schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:2]))
-		elif action == THIRD_SLASH:
+		elif keep == THIRD_SLASH:
 			maybe_print = schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:3]))
-		elif action == FOURTH_SLASH:
+		elif keep == FOURTH_SLASH:
 			maybe_print = schema + "//" + domain + "/" + without_query("/".join(rest.split("/", 2)[:4]))
 
 		if last_printed != maybe_print:
-			print maybe_print
+			if mode == EXTRACT:
+				print maybe_print
+			elif mode == PRINT_FEED_URLS:
+				if extraction.feedfn:
+					print "\n".join(extraction.feedfn(maybe_print))
+			else:
+				1/0
 			last_printed = maybe_print
 
 
