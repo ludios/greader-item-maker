@@ -231,12 +231,26 @@ def fc2_com(p):
 		,"http://mrss.dokoda.jp/a/http/feeds.fc2.com/fc2/xml?host=%s.%s" % (part1, part2)
 	]
 
+def formspring_me(p):
+	username = get_path_segment(p, 1)
+	return [
+		 "http://www.formspring.me/profile/%s.rss" % (username,)
+		,"http://www.formspring.me/profile/%s.rss" % (username.lower(),)
+	]
+
 def diarynote_jp(p):
 	sub = get_non_www_domain_segment(p, 1)
 
 	return [
 		 "http://%s.diarynote.jp/rss?version=2_0" % (sub,)
 		,"http://%s.diarynote.jp/rss?version=1_0" % (sub,)
+	]
+
+def blog_livedoor_jp(p):
+	username = get_path_segment(p, 1)
+	return [
+		 "http://blog.livedoor.jp/%s/index.rdf" % (username,)
+		,"http://blog.livedoor.jp/%s/atom.xml" % (username,)
 	]
 
 def as_is(p):
@@ -304,13 +318,13 @@ path_to_extraction = {
 	,'ameblo.jp': Extraction(keep=FIRST_SLASH, feedfn=ameblo_jp)
 	,'rssblog.ameba.jp': Extraction(keep=FIRST_SLASH, feedfn=ameblo_jp)
 	,'wretch.cc/blog/': Extraction(keep=SECOND_SLASH, feedfn=wretch_cc)
-	,'formspring.me': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'formspring.me': Extraction(keep=FIRST_SLASH, feedfn=formspring_me)
 	,'blog.shinobi.jp': Extraction(keep=DOMAIN, feedfn=blog_shinobi_jp)
 	,'rss.exblog.jp/rss/exblog/': Extraction(keep=THIRD_SLASH, feedfn=rss_exblog_jp)
 	,'exblog.jp': Extraction(keep=DOMAIN, feedfn=exblog_jp)
 	,'blog.hexun.com': Extraction(keep=DOMAIN, feedfn=blog_hexun_com)
 	,'blog.hexun.com.tw': Extraction(keep=DOMAIN, feedfn=blog_hexun_com)
-	,'blog.livedoor.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'blog.livedoor.jp': Extraction(keep=FIRST_SLASH, feedfn=blog_livedoor_jp)
 	,'altervista.org': Extraction(keep=DOMAIN, feedfn=None)
 	,'feeds.qzone.qq.com/cgi-bin/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'qzone.qq.com': Extraction(keep=DOMAIN, feedfn=None)
