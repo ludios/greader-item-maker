@@ -261,7 +261,7 @@ def feed43_com(p):
 	feedname = get_path_segment(p, 1)
 	return [
 		 "http://feed43.com/%s" % (feedname,)
-		,"http://feed43.com/%s" % (feedname,)
+		,"http://www.feed43.com/%s" % (feedname,)
 	]
 
 def qzone_qq_com(p):
