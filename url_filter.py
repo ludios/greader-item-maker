@@ -253,6 +253,21 @@ def blog_livedoor_jp(p):
 		,"http://blog.livedoor.jp/%s/atom.xml" % (username,)
 	]
 
+def qzone_qq_com(p):
+	sub = get_non_www_domain_segment(p, 1)
+	return [
+		"http://feeds.qzone.qq.com/cgi-bin/cgi_rss_out?uin=%s" % (sub,)
+	]
+
+def blog_163_com(p):
+	blogname = get_non_www_domain_segment(p, 1)
+	if blogname == "blog":
+		blogname = get_path_segment(p, 1)
+	return [
+		 "http://%s.blog.163.com/rss/" % (blogname,)
+		,"http://blog.163.com/%s/rss/" % (blogname,)
+	]
+
 def as_is(p):
 	p = p.replace("feed://", "http://", 1)
 	if not (p.startswith("http://") or p.startswith("https://")):
@@ -327,8 +342,8 @@ path_to_extraction = {
 	,'blog.livedoor.jp': Extraction(keep=FIRST_SLASH, feedfn=blog_livedoor_jp)
 	,'altervista.org': Extraction(keep=DOMAIN, feedfn=None)
 	,'feeds.qzone.qq.com/cgi-bin/': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'qzone.qq.com': Extraction(keep=DOMAIN, feedfn=None)
-	,'blog.163.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'qzone.qq.com': Extraction(keep=DOMAIN, feedfn=qzone_qq_com)
+	,'blog.163.com': Extraction(keep=FIRST_SLASH, feedfn=blog_163_com)
 	,'inube.com': Extraction(keep=DOMAIN, feedfn=None)
 	,'rss.my.nero.com/user/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'my.nero.com': Extraction(keep=DOMAIN, feedfn=None)
