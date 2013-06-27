@@ -143,8 +143,10 @@ def typepad_com(p):
 	]
 
 def posterous_com(p):
-	assert not p.endswith('/'), p
-	return [p + '/rss.xml']
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		'http://%s.posterous.com/rss.xml' % (username,)
+	]
 
 def egloos_com(p):
 	username = get_non_www_domain_segment(p, 1)
@@ -175,6 +177,12 @@ def rss_exblog_jp(p):
 		,"http://rss.exblog.jp/rss/exblog/%s/atom.xml" % (username,)
 	]
 
+def blog_roodo_com(p):
+	username = get_path_segment(p, 1)
+	return [
+		 "http://blog.roodo.com/%s/rss.xml" % (username,)
+	]
+
 def exblog_jp(p):
 	username = get_non_www_domain_segment(p, 1)
 	return [
@@ -198,6 +206,20 @@ def feedsky_com(p):
 	if p.endswith(".html") or "/~feedsky/" in p:
 		return []
 	return [p]
+
+def fc2_com(p):
+	if not (p.startswith("http://") or p.startswith("https://")):
+		return []
+
+	part1 = get_non_www_domain_segment(p, 1)
+	part2 = get_non_www_domain_segment(p, 2)
+
+	return [
+		 "http://%s.%s.fc2.com/?xml" % (part1, part2)
+		,"http://feeds.fc2.com/fc2/xml?host=%s.%s" % (part1, part2)
+		,"http://mrss.dokoda.jp/a/http/%s.%s.fc2.com/?xml" % (part1, part2)
+		,"http://mrss.dokoda.jp/a/http/feeds.fc2.com/fc2/xml?host=%s.%s" % (part1, part2)
+	]
 
 def as_is(p):
 	p = p.replace("feed://", "http://", 1)
@@ -259,7 +281,7 @@ path_to_extraction = {
 	,'groups.yahoo.com/group/': Extraction(keep=SECOND_SLASH, feedfn=groups_yahoo_com)
 	,'typepad.com': Extraction(keep=FIRST_SLASH, feedfn=typepad_com)
 	,'typepad.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
-	,'blog.roodoo.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'blog.roodo.com': Extraction(keep=FIRST_SLASH, feedfn=blog_roodo_com)
 	,'diarynote.jp': Extraction(keep=DOMAIN, feedfn=None)
 	,'ameblo.jp': Extraction(keep=FIRST_SLASH, feedfn=ameblo_jp)
 	,'rssblog.ameba.jp': Extraction(keep=FIRST_SLASH, feedfn=ameblo_jp)
@@ -352,6 +374,8 @@ path_to_extraction = {
 	# TODO: news.google.com, needs filter on output=(rss|atom)
 	,'webcast.berkeley.edu/media/common/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,"fullrss.net": Extraction(keep=FULL_URL, feedfn=as_is)
+	,"mrss.dokoda.jp/a/": Extraction(keep=FULL_URL, feedfn=as_is)
+	,"fc2.com": Extraction(keep=DOMAIN, feedfn=fc2_com)
 }
 
 _domain_to_extraction = defaultdict(list)

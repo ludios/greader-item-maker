@@ -244,7 +244,9 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 		except UnicodeDecodeError:
 			print "Failed to decode as ascii; skipping %r" % (feed_url,)
 			continue
-		assert feed_url.startswith("http://") or feed_url.startswith("https://"), feed_url
+		if not (feed_url.startswith("http://") or feed_url.startswith("https://")):
+			print "Skipping unknown-schema URL %r" % (feed_url,)
+			continue
 		encoded_url = urllib.quote_plus(feed_url)
 		if encoded_url in new_encoded_urls or db.has(reversed_encoded_url(encoded_url)):
 			already += 1
