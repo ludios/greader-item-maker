@@ -193,14 +193,22 @@ def blog_shinobi_jp(p):
 	]
 
 def feedsky_com(p):
+	if not (p.startswith("http://") or p.startswith("https://")):
+		return []
 	if p.endswith(".html") or "/~feedsky/" in p:
 		return []
 	return [p]
 
 def as_is(p):
+	p = p.replace("feed://", "http://", 1)
+	if not (p.startswith("http://") or p.startswith("https://")):
+		return []
 	return [p]
 
 def as_is_and_lower(p):
+	p = p.replace("feed://", "http://", 1)
+	if not (p.startswith("http://") or p.startswith("https://")):
+		return []
 	return [p, p.lower()]
 
 def get_wordpress_feed_urls_for_base(base):
