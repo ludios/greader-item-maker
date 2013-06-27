@@ -22,7 +22,11 @@ def get_feed_url(greader_url):
 
 def main():
 	for line in sys.stdin:
-		data = json.loads(line)
+		try:
+			data = json.loads(line)
+		except ValueError:
+			print >>sys.stderr, "Failed to decode JSON in line %r" % (line,)
+			continue
 		assert isinstance(data['status_code'], basestring)
 		if data['status_code'] == '200':
 			greader_url = data['url']
