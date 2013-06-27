@@ -30,10 +30,10 @@ def get_domain_and_path(p):
 	schema, _, domain_and_path = p.split("/", 2)
 	return domain_and_path
 
-def get_non_www_domain_segment(p, index):
+def get_non_www_domain_segment(p, index, skiplist=set()):
 	schema, _, domain_and_path = p.split("/", 2)
 	candidate = domain_and_path.split(".")[index - 1]
-	if candidate == "www":
+	if candidate == "www" or candidate in skiplist:
 		candidate = domain_and_path.split(".")[index - 1 + 1]
 	return candidate
 
@@ -129,7 +129,9 @@ def livejournal_com(p):
 	]
 
 def typepad_com(p):
-	assert not p.endswith('/'), p
+	if p.endswith("/"):
+		# No blogname, so we don't know where the feed is
+		return []
 	blogname = get_path_segment(p, 1)
 	if blogname.startswith("."):
 		return []
@@ -148,7 +150,9 @@ def egloos_com(p):
 	return ["http://rss.egloos.com/blog/" + username]
 
 def hatena_ne_jp(p):
-	assert not p.endswith('/'), p
+	if p.endswith("/"):
+		# No username
+		return []
 	return [
 		 p + "/rss"
 		,p + "/rss2"
@@ -177,6 +181,14 @@ def exblog_jp(p):
 		,"http://%s.exblog.jp/atom.xml" % (username,)
 		,"http://rss.exblog.jp/rss/exblog/%s/index.xml" % (username,)
 		,"http://rss.exblog.jp/rss/exblog/%s/atom.xml" % (username,)
+	]
+
+def blog_shinobi_jp(p):
+	username = get_non_www_domain_segment(p, 1, skiplist=set(["file"]))
+	return [
+		 "http://%s.blog.shinobi.jp/RSS/" % (username,)
+		,"http://%s.blog.shinobi.jp/ATOM/" % (username,)
+		,"http://blogrss.shinobi.jp/rss/ninja/%s/atom" % (username,)
 	]
 
 def as_is(p):
@@ -208,7 +220,7 @@ path_to_extraction = {
 	,'rssblog.ameba.jp': Extraction(keep=FIRST_SLASH, feedfn=ameblo_jp)
 	,'wretch.cc/blog/': Extraction(keep=SECOND_SLASH, feedfn=wretch_cc)
 	,'formspring.me': Extraction(keep=FIRST_SLASH, feedfn=None)
-	,'blog.shinobi.jp': Extraction(keep=DOMAIN, feedfn=None)
+	,'blog.shinobi.jp': Extraction(keep=DOMAIN, feedfn=blog_shinobi_jp)
 	,'rss.exblog.jp/rss/exblog/': Extraction(keep=THIRD_SLASH, feedfn=rss_exblog_jp)
 	,'exblog.jp': Extraction(keep=DOMAIN, feedfn=exblog_jp)
 	,'blog.hexun.com': Extraction(keep=DOMAIN, feedfn=blog_hexun_com)
