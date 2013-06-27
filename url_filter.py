@@ -129,7 +129,7 @@ def livejournal_com(p):
 		,'http://www.livejournal.com/users/%s/data/atom' % (username,)
 	]
 
-def typepad_com(p):
+def typepad_com(p): # also handles typepad.jp
 	if p.endswith("/") or not (p.startswith("http://") or p.startswith("https://")):
 		# No blogname, so we don't know where the feed is
 		return []
@@ -201,6 +201,15 @@ def blog_shinobi_jp(p):
 		,"http://blogrss.shinobi.jp/rss/ninja/%s/atom" % (username,)
 	]
 
+def blogger_com_feeds(p):
+	feedid = get_path_segment(p, 2)
+	return [
+		 "http://www.blogger.com/feeds/%s/posts/default" % (feedid,)
+		,"http://www.blogger.com/feeds/%s/posts/full" % (feedid,)
+		,"http://www.blogger.com/feeds/%s/posts/default?alt=rss" % (feedid,)
+		,"http://www.blogger.com/feeds/%s/posts/default?alt=rss&orderby=published" % (feedid,)
+	]
+
 def feedsky_com(p):
 	if not (p.startswith("http://") or p.startswith("https://")):
 		return []
@@ -220,6 +229,14 @@ def fc2_com(p):
 		,"http://feeds.fc2.com/fc2/xml?host=%s.%s" % (part1, part2)
 		,"http://mrss.dokoda.jp/a/http/%s.%s.fc2.com/?xml" % (part1, part2)
 		,"http://mrss.dokoda.jp/a/http/feeds.fc2.com/fc2/xml?host=%s.%s" % (part1, part2)
+	]
+
+def diarynote_jp(p):
+	sub = get_non_www_domain_segment(p, 1)
+
+	return [
+		 "http://%s.diarynote.jp/rss?version=2_0" % (sub,)
+		,"http://%s.diarynote.jp/rss?version=1_0" % (sub,)
 	]
 
 def as_is(p):
@@ -273,7 +290,7 @@ path_to_extraction = {
 	,'livejournal.com': Extraction(keep=DOMAIN, feedfn=livejournal_com)
 	,'wordpress.com': Extraction(keep=DOMAIN, feedfn=wordpress_com)
 	,'blogspot.com': Extraction(keep=DOMAIN, feedfn=blogspot_com)
-	,'blogger.com/feeds/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'blogger.com/feeds/': Extraction(keep=SECOND_SLASH, feedfn=blogger_com_feeds)
 	,'feeds.feedburner.com': Extraction(keep=FIRST_SLASH, feedfn=as_is_and_lower)
 	,'feeds2.feedburner.com': Extraction(keep=FIRST_SLASH, feedfn=as_is_and_lower)
 	,'feeds.rapidfeeds.com': Extraction(keep=FIRST_SLASH, feedfn=as_is)
@@ -281,9 +298,9 @@ path_to_extraction = {
 	,'groups.google.com/group/': Extraction(keep=SECOND_SLASH, feedfn=groups_google_com)
 	,'groups.yahoo.com/group/': Extraction(keep=SECOND_SLASH, feedfn=groups_yahoo_com)
 	,'typepad.com': Extraction(keep=FIRST_SLASH, feedfn=typepad_com)
-	,'typepad.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'typepad.jp': Extraction(keep=FIRST_SLASH, feedfn=typepad_com)
 	,'blog.roodo.com': Extraction(keep=FIRST_SLASH, feedfn=blog_roodo_com)
-	,'diarynote.jp': Extraction(keep=DOMAIN, feedfn=None)
+	,'diarynote.jp': Extraction(keep=DOMAIN, feedfn=diarynote_jp)
 	,'ameblo.jp': Extraction(keep=FIRST_SLASH, feedfn=ameblo_jp)
 	,'rssblog.ameba.jp': Extraction(keep=FIRST_SLASH, feedfn=ameblo_jp)
 	,'wretch.cc/blog/': Extraction(keep=SECOND_SLASH, feedfn=wretch_cc)
