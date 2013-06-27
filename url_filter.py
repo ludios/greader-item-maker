@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import re
 import sys
 import pprint
 from collections import defaultdict, namedtuple
@@ -315,19 +316,27 @@ def get_wordpress_feed_urls_for_base(base):
 		,"%s/wp-atom.php" % (base,)
 	]
 
+YYYY_MM_PATH_RE = re.compile("/20[01][0-9]/[01][0-9]/")
+
 def get_guessed_feeds(url):
 	if not (url.startswith("http://") or url.startswith("https://")):
 		return []
 
-	# TODO: /YYYY/MM/(DD/)? -> wordpress
 	# TODO: vbulletin
-	if "/wp-content/" in url and not "=http://" in url and not "=https://" in url:
-		without_wp_content = url.split("/wp-content/", 1)[0]
-		# Filter out all sorts of crap like google image search URLs
-		if len(without_wp_content) > 70:
-			return []
+	for wordpress_pattern in ("/wp-content/", "/wordpress/", "/category/"):
+		if wordpress_pattern in url and not "=http://" in url and not "=https://" in url:
+			base = url.split(wordpress_pattern, 1)[0]
+			# Filter out all sorts of crap like google image search URLs
+			if len(base) <= 70:
+				return get_wordpress_feed_urls_for_base(base)
 
-		return get_wordpress_feed_urls_for_base(without_wp_content)
+	if (url.endswith(".html") or url.endswith("/")) and not ".blogspot." in url and not "=http" in url and not '?http' in url:
+		yyyy_mm_matches = YYYY_MM_PATH_RE.findall(url)
+		if yyyy_mm_matches:
+			base = url.split(yyyy_mm_matches[0], 1)[0]
+			if len(base) <= 100:
+				##print "XX", base
+				return get_wordpress_feed_urls_for_base(base)
 
 	return []
 
