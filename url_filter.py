@@ -68,15 +68,14 @@ def wordpress_com(p):
 	]
 
 def blogspot_com(p):
-	assert not p.endswith('/'), p
 	if ".bp.blogspot.com" in p:
 		return []
-	fixed = httpify(last3seg(p))
+	username = get_non_www_domain_segment(p, 1)
 	return [
-		 fixed + '/feeds/posts/default'
-		,fixed + '/feeds/posts/default?alt=rss'
-		,fixed + '/atom.xml'
-		,fixed + '/rss.xml'
+		 'http://%s.blogspot.com/feeds/posts/default' % (username,)
+		,'http://%s.blogspot.com/feeds/posts/default?alt=rss' % (username,)
+		,'http://%s.blogspot.com/atom.xml' % (username,)
+		,'http://%s.blogspot.com/rss.xml' % (username,)
 	]
 
 def blog4ever_com(p):
@@ -86,12 +85,12 @@ def blog4ever_com(p):
 		return []
 
 def groups_google_com(p):
-	fixed = httpify(last3seg(p))
+	groupname = get_path_segment(p, 2)
 	return [
-		 fixed + '/feed/rss_v2_0_msgs.xml'
-		,fixed + '/feed/atom_v1_0_msgs.xml'
-		,fixed.lower() + '/feed/rss_v2_0_msgs.xml'
-		,fixed.lower() + '/feed/atom_v1_0_msgs.xml'
+		 'http://groups.google.com/group/%s/feed/rss_v2_0_msgs.xml' % (groupname,)
+		,'http://groups.google.com/group/%s/feed/atom_v1_0_msgs.xml' % (groupname,)
+		,'https://groups.google.com/group/%s/feed/rss_v2_0_msgs.xml' % (groupname,)
+		,'https://groups.google.com/group/%s/feed/atom_v1_0_msgs.xml' % (groupname,)
 	]
 
 def groups_yahoo_com(p):
@@ -127,7 +126,7 @@ def livejournal_com(p):
 	]
 
 def typepad_com(p):
-	if p.endswith("/"):
+	if p.endswith("/") or not (p.startswith("http://") or p.startswith("https://")):
 		# No blogname, so we don't know where the feed is
 		return []
 	blogname = get_path_segment(p, 1)
@@ -200,7 +199,25 @@ def as_is(p):
 def as_is_and_lower(p):
 	return [p, p.lower()]
 
+def get_wordpress_feed_urls_for_base(base):
+	return [
+		 "%s/feed" % (base,)
+		,"%s/feed/" % (base,)
+		,"%s/feed/atom/" % (base,)
+		,"%s/feed/rss/" % (base,)
+		,"%s/comments/feed" % (base,)
+		,"%s/comments/feed/" % (base,)
+		,"%s/?feed=rss2" % (base,)
+		,"%s/?feed=atom" % (base,)
+		,"%s/?feed=comments-rss2" % (base,)
+		,"%s/wp-rss2.php" % (base,)
+		,"%s/wp-atom.php" % (base,)
+	]
+
 def get_guessed_feeds(url):
+	if not (url.startswith("http://") or url.startswith("https://")):
+		return []
+
 	# TODO: /YYYY/MM/(DD/)? -> wordpress
 	# TODO: vbulletin
 	if "/wp-content/" in url and not "=http://" in url and not "=https://" in url:
@@ -209,19 +226,7 @@ def get_guessed_feeds(url):
 		if len(without_wp_content) > 70:
 			return []
 
-		return [
-			 "%s/feed" % (without_wp_content,)
-			,"%s/feed/" % (without_wp_content,)
-			,"%s/feed/atom/" % (without_wp_content,)
-			,"%s/feed/rss/" % (without_wp_content,)
-			,"%s/comments/feed" % (without_wp_content,)
-			,"%s/comments/feed/" % (without_wp_content,)
-			,"%s/?feed=rss2" % (without_wp_content,)
-			,"%s/?feed=atom" % (without_wp_content,)
-			,"%s/?feed=comments-rss2" % (without_wp_content,)
-			,"%s/wp-rss2.php" % (without_wp_content,)
-			,"%s/wp-atom.php" % (without_wp_content,)
-		]
+		return get_wordpress_feed_urls_for_base(without_wp_content)
 
 	return []
 
