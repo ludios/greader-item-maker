@@ -189,11 +189,41 @@ def blog_shinobi_jp(p):
 		,"http://blogrss.shinobi.jp/rss/ninja/%s/atom" % (username,)
 	]
 
+def feedsky_com(p):
+	if p.endswith(".html") or "/~feedsky/" in p:
+		return []
+	return [p]
+
 def as_is(p):
 	return [p]
 
 def as_is_and_lower(p):
 	return [p, p.lower()]
+
+def get_guessed_feeds(url):
+	# TODO: /YYYY/MM/(DD/)? -> wordpress
+	# TODO: vbulletin
+	if "/wp-content/" in url and not "=http://" in url and not "=https://" in url:
+		without_wp_content = url.split("/wp-content/", 1)[0]
+		# Filter out all sorts of crap like google image search URLs
+		if len(without_wp_content) > 70:
+			return []
+
+		return [
+			 "%s/feed" % (without_wp_content,)
+			,"%s/feed/" % (without_wp_content,)
+			,"%s/feed/atom/" % (without_wp_content,)
+			,"%s/feed/rss/" % (without_wp_content,)
+			,"%s/comments/feed" % (without_wp_content,)
+			,"%s/comments/feed/" % (without_wp_content,)
+			,"%s/?feed=rss2" % (without_wp_content,)
+			,"%s/?feed=atom" % (without_wp_content,)
+			,"%s/?feed=comments-rss2" % (without_wp_content,)
+			,"%s/wp-rss2.php" % (without_wp_content,)
+			,"%s/wp-atom.php" % (without_wp_content,)
+		]
+
+	return []
 
 path_to_extraction = {
 	 'tumblr.com': Extraction(keep=DOMAIN, feedfn=tumblr_com)
@@ -291,7 +321,7 @@ path_to_extraction = {
 	,'blog.sina.com.cn/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'blog.sina.com.cn': Extraction(keep=FIRST_SLASH, feedfn=None)
 	,'loadaveragezero.com/drx/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'feedsky.com': Extraction(keep=FULL_URL, feedfn=as_is)
+	,'feedsky.com': Extraction(keep=FULL_URL, feedfn=feedsky_com)
 	,'rss.pics.livedoor.com': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'news.livedoor.com/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'podbean.com': Extraction(keep=DOMAIN, feedfn=None)
@@ -397,6 +427,11 @@ def main():
 
 		extraction = get_extraction(domain, rest)
 		if extraction is None:
+			if mode == PRINT_FEED_URLS:
+				guessed_feeds = get_guessed_feeds(url)
+				if guessed_feeds:
+					print "\n".join(guessed_feeds)
+
 			# Don't want this URL
 			continue
 
