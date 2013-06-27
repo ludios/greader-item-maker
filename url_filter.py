@@ -32,9 +32,9 @@ def get_domain_and_path(p):
 
 def get_non_www_domain_segment(p, index):
 	schema, _, domain_and_path = p.split("/", 2)
-	candidate = domain.split(".")[index - 1]
+	candidate = domain_and_path.split(".")[index - 1]
 	if candidate == "www":
-		candidate = domain.split(".")[index - 1 + 1]
+		candidate = domain_and_path.split(".")[index - 1 + 1]
 	return candidate
 
 def get_path_segment(p, index):
@@ -45,27 +45,32 @@ def get_path_segment(p, index):
 		return ''
 
 def tumblr_com(p):
+	if ".media.tumblr.com" in p or "/media.tumblr.com" in p:
+		return []
 	return [httpify(last3seg(p)) + "/rss"]
 
 def wordpress_com(p):
-	assert not p.endswith('/')
-	fixed = last3seg(p)
+	assert not p.endswith('/'), p
+	# This handles username.wordpress.com and username.files.wordpress.com
+	username = get_non_www_domain_segment(p, 1)
 	return [
-		 fixed + "/feed"
-		,fixed + "/feed/"
-		,fixed + "/feed/atom"
-		,fixed + "/feed/atom/"
-		,fixed + "/feed/rss"
-		,fixed + "/feed/rss/"
-		,fixed + "/comments/feed"
-		,fixed + "/comments/feed/"
-		,fixed + "/?feed=rss2" # rare
-		,fixed + "/?feed=atom" # rare
-		,fixed + "/?feed=comments-rss2" # very rare
+		 "http://%s.wordpress.com/feed" % (username,)
+		,"http://%s.wordpress.com/feed/" % (username,)
+		,"http://%s.wordpress.com/feed/atom" % (username,)
+		,"http://%s.wordpress.com/feed/atom/" % (username,)
+		,"http://%s.wordpress.com/feed/rss" % (username,)
+		,"http://%s.wordpress.com/feed/rss/" % (username,)
+		,"http://%s.wordpress.com/comments/feed" % (username,)
+		,"http://%s.wordpress.com/comments/feed/" % (username,)
+		,"http://%s.wordpress.com/?feed=rss2" % (username,) # rare
+		,"http://%s.wordpress.com/?feed=atom" % (username,) # rare
+		,"http://%s.wordpress.com/?feed=comments-rss2" % (username,) # very rare
 	]
 
 def blogspot_com(p):
-	assert not p.endswith('/')
+	assert not p.endswith('/'), p
+	if ".bp.blogspot.com" in p:
+		return []
 	fixed = httpify(last3seg(p))
 	return [
 		 fixed + '/feeds/posts/default'
@@ -81,7 +86,7 @@ def blog4ever_com(p):
 		return []
 
 def groups_google_com(p):
-	assert not p.endswith('/')
+	assert not p.endswith('/'), p
 	fixed = httpify(last3seg(p))
 	return [
 		 fixed + '/feed/rss_v2_0_msgs.xml'
@@ -107,7 +112,7 @@ def ameblo_jp(p):
 	]
 
 def wretch_cc(p):
-	assert not p.endswith('/')
+	assert not p.endswith('/'), p
 	username = get_path_segment(p, 2)
 	return [
 		 "http://www.wretch.cc/blog/%s&rss20=1" % (username,)
@@ -124,11 +129,54 @@ def livejournal_com(p):
 	]
 
 def typepad_com(p):
-	assert not p.endswith('/')
+	assert not p.endswith('/'), p
+	blogname = get_path_segment(p, 1)
+	if blogname.startswith("."):
+		return []
 	return [
 		 p + '/atom.xml'
 		,p + '/rss.xml'
 		,p + '/index.rdf'
+	]
+
+def posterous_com(p):
+	assert not p.endswith('/'), p
+	return [p + '/rss.xml']
+
+def egloos_com(p):
+	username = get_non_www_domain_segment(p, 1)
+	return ["http://rss.egloos.com/blog/" + username]
+
+def hatena_ne_jp(p):
+	assert not p.endswith('/'), p
+	return [
+		 p + "/rss"
+		,p + "/rss2"
+	]
+
+def blog_hexun_com(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		 "http://%s.blog.hexun.com/rss2.aspx" % (username,)
+		,"http://fulltextrssfeed.com/%s.blog.hexun.com/rss2.aspx" % (username,)
+	]
+
+def rss_exblog_jp(p):
+	username = get_path_segment(p, 2)
+	return [
+		 "http://%s.exblog.jp/index.xml" % (username,)
+		,"http://%s.exblog.jp/atom.xml" % (username,)
+		,"http://rss.exblog.jp/rss/exblog/%s/index.xml" % (username,)
+		,"http://rss.exblog.jp/rss/exblog/%s/atom.xml" % (username,)
+	]
+
+def exblog_jp(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		 "http://%s.exblog.jp/index.xml" % (username,)
+		,"http://%s.exblog.jp/atom.xml" % (username,)
+		,"http://rss.exblog.jp/rss/exblog/%s/index.xml" % (username,)
+		,"http://rss.exblog.jp/rss/exblog/%s/atom.xml" % (username,)
 	]
 
 def as_is(p):
@@ -149,7 +197,7 @@ path_to_extraction = {
 	,'feeds.feedburner.com': Extraction(keep=FIRST_SLASH, feedfn=as_is_and_lower)
 	,'feeds2.feedburner.com': Extraction(keep=FIRST_SLASH, feedfn=as_is_and_lower)
 	,'feeds.rapidfeeds.com': Extraction(keep=FIRST_SLASH, feedfn=as_is)
-	,'posterous.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'posterous.com': Extraction(keep=DOMAIN, feedfn=posterous_com)
 	,'groups.google.com/group/': Extraction(keep=SECOND_SLASH, feedfn=groups_google_com)
 	,'groups.yahoo.com/group/': Extraction(keep=SECOND_SLASH, feedfn=groups_yahoo_com)
 	,'typepad.com': Extraction(keep=FIRST_SLASH, feedfn=typepad_com)
@@ -161,10 +209,10 @@ path_to_extraction = {
 	,'wretch.cc/blog/': Extraction(keep=SECOND_SLASH, feedfn=wretch_cc)
 	,'formspring.me': Extraction(keep=FIRST_SLASH, feedfn=None)
 	,'blog.shinobi.jp': Extraction(keep=DOMAIN, feedfn=None)
-	,'rss.exblog.jp/rss/exblog/': Extraction(keep=THIRD_SLASH, feedfn=None)
-	,'exblog.jp': Extraction(keep=DOMAIN, feedfn=None)
-	,'blog.hexun.com': Extraction(keep=DOMAIN, feedfn=None)
-	,'blog.hexun.com.tw': Extraction(keep=DOMAIN, feedfn=None)
+	,'rss.exblog.jp/rss/exblog/': Extraction(keep=THIRD_SLASH, feedfn=rss_exblog_jp)
+	,'exblog.jp': Extraction(keep=DOMAIN, feedfn=exblog_jp)
+	,'blog.hexun.com': Extraction(keep=DOMAIN, feedfn=blog_hexun_com)
+	,'blog.hexun.com.tw': Extraction(keep=DOMAIN, feedfn=blog_hexun_com)
 	,'blog.livedoor.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
 	,'altervista.org': Extraction(keep=DOMAIN, feedfn=None)
 	,'feeds.qzone.qq.com/cgi-bin/': Extraction(keep=FULL_URL, feedfn=as_is)
@@ -217,7 +265,7 @@ path_to_extraction = {
 	,'multiply.com': Extraction(keep=DOMAIN, feedfn=None)
 	,'bandcamp.com/feed/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'bandcamp.com': Extraction(keep=DOMAIN, feedfn=None)
-	,'hatena.ne.jp': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'hatena.ne.jp': Extraction(keep=FIRST_SLASH, feedfn=hatena_ne_jp)
 	# vimeo.com needs to be filtered afterwards to get usernames and exclude video IDs
 	,'vimeo.com': Extraction(keep=FIRST_SLASH, feedfn=None)
 	,'flickr.com/services/feeds/': Extraction(keep=FULL_URL, feedfn=as_is)
@@ -225,7 +273,7 @@ path_to_extraction = {
 	,'api.twitter.com/1/statuses/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'twitter.com/statuses/user_timeline/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'rss.egloos.com': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'egloos.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'egloos.com': Extraction(keep=DOMAIN, feedfn=egloos_com)
 	,'podomatic.com': Extraction(keep=DOMAIN, feedfn=None)
 	,'secuobs.com/revue/xml/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'blogs.com': Extraction(keep=DOMAIN, feedfn=None)
@@ -257,9 +305,11 @@ for k, extraction in path_to_extraction.iteritems():
 		domain = k
 		path = ''
 	_domain_to_extraction[domain].append((path, extraction))
+del domain, path, k, extraction
 
 for k, extraction in _domain_to_extraction.iteritems():
 	_domain_to_extraction[k] = sorted(_domain_to_extraction[k], key=lambda x: len(x), reverse=True)
+del k, extraction
 
 ##pprint.pprint(dict(_domain_to_extraction))
 
@@ -360,7 +410,9 @@ def main():
 				print maybe_print
 			elif mode == PRINT_FEED_URLS:
 				if extraction.feedfn:
-					print "\n".join(extraction.feedfn(maybe_print))
+					feed_urls = extraction.feedfn(maybe_print)
+					if feed_urls:
+						print "\n".join(feed_urls)
 			else:
 				1/0
 			last_printed = maybe_print
