@@ -224,6 +224,7 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 	already = 0
 	start = time.time()
 	n = 0 # Because loop body might never run
+	print "Quick dedup is %s." % ("on" if quick_dedup else "off")
 	if quick_dedup:
 		already_seen = set()
 	for n, feed_url in enumerate(inputf):
