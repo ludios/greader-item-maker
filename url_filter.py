@@ -253,6 +253,16 @@ def blog_livedoor_jp(p):
 		,"http://blog.livedoor.jp/%s/atom.xml" % (username,)
 	]
 
+def feed43_com(p):
+	if not p.endswith(".xml"):
+		return []
+
+	feedname = get_path_segment(p, 1)
+	return [
+		 "http://feed43.com/%s" % (feedname,)
+		,"http://feed43.com/%s" % (feedname,)
+	]
+
 def qzone_qq_com(p):
 	sub = get_non_www_domain_segment(p, 1)
 	return [
@@ -266,6 +276,16 @@ def blog_163_com(p):
 	return [
 		 "http://%s.blog.163.com/rss/" % (blogname,)
 		,"http://blog.163.com/%s/rss/" % (blogname,)
+	]
+
+def xanga_com(p):
+	blogname = get_non_www_domain_segment(p, 1)
+	return [
+		 "http://www.xanga.com/rss.aspx?user=%s" % (blogname,)
+		,"http://www.xanga.com/rssfeed.aspx?u=%s" % (blogname,)
+		,"http://%s.xanga.com/rss/" % (blogname,)
+		,"http://%s.xanga.com/rss" % (blogname,)
+		,"http://www.xanga.com/%s/rss" % (blogname,)
 	]
 
 def as_is(p):
@@ -347,10 +367,10 @@ path_to_extraction = {
 	,'inube.com': Extraction(keep=DOMAIN, feedfn=None)
 	,'rss.my.nero.com/user/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'my.nero.com': Extraction(keep=DOMAIN, feedfn=None)
-	,'feed43.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'feed43.com': Extraction(keep=FIRST_SLASH, feedfn=feed43_com)
 	,'static.blog4ever.com': Extraction(keep=FULL_URL, feedfn=blog4ever_com)
 	,'www.xanga.com/rss.aspx': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'xanga.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'xanga.com': Extraction(keep=DOMAIN, feedfn=xanga_com)
 	,'feed.pixnet.net/blog/posts/rss/': Extraction(keep=FOURTH_SLASH, feedfn=as_is)
 	,'feed.pixnet.net/blog/posts/atom/': Extraction(keep=FOURTH_SLASH, feedfn=as_is)
 	,'pixnet.net': Extraction(keep=DOMAIN, feedfn=None)

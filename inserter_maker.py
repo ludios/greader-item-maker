@@ -12,6 +12,11 @@ import leveldb
 
 _postImportVars = vars().keys()
 
+if "ITEM_MAKER_ACCURATE" not in os.environ:
+	quick_dedup = True
+	assert hash(2**34) > 2**33, "Need a 64-bit Python for 64-bit hash()"
+else:
+	quick_dedup = False
 
 # Just for progress output
 lines_per_print = 10000
@@ -219,6 +224,8 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 	already = 0
 	start = time.time()
 	n = 0 # Because loop body might never run
+	if quick_dedup:
+		already_seen = set()
 	for n, feed_url in enumerate(inputf):
 		if n < start_at_input_line:
 			continue
@@ -236,6 +243,14 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 		feed_url = feed_url.rstrip()
 		if not feed_url:
 			continue
+
+		if quick_dedup:
+			# Store the hash() instead of the string to save memory
+			hashed_feed_url = hash(feed_url)
+			if hashed_feed_url in already_seen:
+				continue
+			already_seen.add(hashed_feed_url)
+
 		if feed_url.startswith("ftp://"):
 			print "Skipping FTP feed %r" % (feed_url,)
 			continue
