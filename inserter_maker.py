@@ -12,7 +12,7 @@ import leveldb
 
 _postImportVars = vars().keys()
 
-if "ITEM_MAKER_ACCURATE" not in os.environ:
+if "DISABLE_HASH_UNIQ" not in os.environ:
 	quick_dedup = True
 	assert hash(2**34) > 2**33, "Need a 64-bit Python for 64-bit hash()"
 else:
