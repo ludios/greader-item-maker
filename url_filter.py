@@ -180,7 +180,8 @@ def rss_exblog_jp(p):
 def blog_roodo_com(p):
 	username = get_path_segment(p, 1)
 	return [
-		 "http://blog.roodo.com/%s/rss.xml" % (username,)
+		  "http://blog.roodo.com/%s/rss.xml" % (username,)
+		 ,"http://blog.roodo.com/%s/atom.xml" % (username,)
 	]
 
 def exblog_jp(p):
