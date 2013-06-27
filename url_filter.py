@@ -86,7 +86,6 @@ def blog4ever_com(p):
 		return []
 
 def groups_google_com(p):
-	assert not p.endswith('/'), p
 	fixed = httpify(last3seg(p))
 	return [
 		 fixed + '/feed/rss_v2_0_msgs.xml'
@@ -112,7 +111,6 @@ def ameblo_jp(p):
 	]
 
 def wretch_cc(p):
-	assert not p.endswith('/'), p
 	username = get_path_segment(p, 2)
 	return [
 		 "http://www.wretch.cc/blog/%s&rss20=1" % (username,)
