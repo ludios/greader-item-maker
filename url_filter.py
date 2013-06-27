@@ -91,6 +91,10 @@ def groups_google_com(p):
 		,'http://groups.google.com/group/%s/feed/atom_v1_0_msgs.xml' % (groupname,)
 		,'https://groups.google.com/group/%s/feed/rss_v2_0_msgs.xml' % (groupname,)
 		,'https://groups.google.com/group/%s/feed/atom_v1_0_msgs.xml' % (groupname,)
+		,'http://groups.google.com/group/%s/feed/rss_v2_0_msgs.xml' % (groupname.lower(),)
+		,'http://groups.google.com/group/%s/feed/atom_v1_0_msgs.xml' % (groupname.lower(),)
+		,'https://groups.google.com/group/%s/feed/rss_v2_0_msgs.xml' % (groupname.lower(),)
+		,'https://groups.google.com/group/%s/feed/atom_v1_0_msgs.xml' % (groupname.lower(),)
 	]
 
 def groups_yahoo_com(p):
