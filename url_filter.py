@@ -119,6 +119,12 @@ def wretch_cc(p):
 	return [
 		 "http://www.wretch.cc/blog/%s&rss20=1" % (username,)
 		,"http://www.wretch.cc/blog/%s&rss20=1" % (username.lower(),)
+		,"http://www.wretch.cc/blog/%s&commentsRss20=1" % (username,)
+		,"http://www.wretch.cc/blog/%s&commentsRss20=1" % (username.lower(),)
+		,"http://www.wretch.cc/album/album_rss.php?id=%s" % (username,)
+		,"http://www.wretch.cc/album/album_rss.php?id=%s" % (username.lower(),)
+		,"http://www.wretch.cc/guestbook/%s&rss20=1" % (username,)
+		,"http://www.wretch.cc/guestbook/%s&rss20=1" % (username.lower(),)
 	]
 
 def livejournal_com(p):
@@ -352,7 +358,8 @@ path_to_extraction = {
 	,'livejournal.com': Extraction(keep=DOMAIN, feedfn=livejournal_com)
 	,'wordpress.com': Extraction(keep=DOMAIN, feedfn=wordpress_com)
 	,'blogspot.com': Extraction(keep=DOMAIN, feedfn=blogspot_com)
-	,'blogger.com/feeds/': Extraction(keep=SECOND_SLASH, feedfn=blogger_com_feeds)
+	# very bad idea - returns an incredible amount of garbage
+	#,'blogger.com/feeds/': Extraction(keep=SECOND_SLASH, feedfn=blogger_com_feeds)
 	,'feeds.feedburner.com': Extraction(keep=FIRST_SLASH, feedfn=as_is_and_lower)
 	,'feeds2.feedburner.com': Extraction(keep=FIRST_SLASH, feedfn=as_is_and_lower)
 	,'feeds.rapidfeeds.com': Extraction(keep=FIRST_SLASH, feedfn=as_is)
