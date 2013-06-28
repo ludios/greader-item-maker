@@ -314,13 +314,22 @@ def get_wordpress_feed_urls_for_base(base):
 		,"%s/wp-atom.php" % (base,)
 	]
 
+def without_too_long(urls):
+	# if over 200 bytes it's unlikely to be a real feed; we want to
+	# avoid filling up greader-items with complete crap
+	return list(u for u in urls if len(u) <= 200)
+
 YYYY_MM_PATH_RE = re.compile("/20[01][0-9]/[01][0-9]/")
 
 def get_guessed_feeds(url):
+	# TODO: generic rss|atom URLs near base of domain
 	# TODO: vbulletin
+	# TODO: other forums
 	for wordpress_pattern in ("/wp-content/", "/wordpress/", "/category/"):
 		if wordpress_pattern in url and not "=http://" in url and not "=https://" in url:
 			base = url.split(wordpress_pattern, 1)[0]
+			if wordpress_pattern == "/wordpress/":
+				base += "/wordpress"
 			# Filter out all sorts of crap like google image search URLs
 			if len(base) <= 70:
 				return get_wordpress_feed_urls_for_base(base)
@@ -546,7 +555,7 @@ def main():
 		extraction = get_extraction(domain, rest)
 		if extraction is None:
 			if mode == PRINT_FEED_URLS:
-				guessed_feeds = get_guessed_feeds(url)
+				guessed_feeds = without_too_long(get_guessed_feeds(url))
 				if guessed_feeds:
 					print "\n".join(guessed_feeds)
 
@@ -573,7 +582,7 @@ def main():
 				print maybe_print
 			elif mode == PRINT_FEED_URLS:
 				if extraction.feedfn:
-					feed_urls = extraction.feedfn(maybe_print)
+					feed_urls = without_too_long(extraction.feedfn(maybe_print))
 					if feed_urls:
 						print "\n".join(feed_urls)
 			else:
