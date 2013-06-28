@@ -131,7 +131,7 @@ def livejournal_com(p):
 	]
 
 def typepad_com(p): # also handles typepad.jp
-	if p.endswith("/") or not (p.startswith("http://") or p.startswith("https://")):
+	if p.endswith("/"):
 		# No blogname, so we don't know where the feed is
 		return []
 	blogname = get_path_segment(p, 1)
@@ -212,16 +212,11 @@ def blogger_com_feeds(p):
 	]
 
 def feedsky_com(p):
-	if not (p.startswith("http://") or p.startswith("https://")):
-		return []
 	if p.endswith(".html") or "/~feedsky/" in p:
 		return []
 	return [p]
 
 def fc2_com(p):
-	if not (p.startswith("http://") or p.startswith("https://")):
-		return []
-
 	part1 = get_non_www_domain_segment(p, 1)
 	part2 = get_non_www_domain_segment(p, 2)
 
@@ -290,15 +285,9 @@ def xanga_com(p):
 	]
 
 def as_is(p):
-	p = p.replace("feed://", "http://", 1)
-	if not (p.startswith("http://") or p.startswith("https://")):
-		return []
 	return [p]
 
 def as_is_and_lower(p):
-	p = p.replace("feed://", "http://", 1)
-	if not (p.startswith("http://") or p.startswith("https://")):
-		return []
 	return [p, p.lower()]
 
 def get_wordpress_feed_urls_for_base(base):
@@ -319,9 +308,6 @@ def get_wordpress_feed_urls_for_base(base):
 YYYY_MM_PATH_RE = re.compile("/20[01][0-9]/[01][0-9]/")
 
 def get_guessed_feeds(url):
-	if not (url.startswith("http://") or url.startswith("https://")):
-		return []
-
 	# TODO: vbulletin
 	for wordpress_pattern in ("/wp-content/", "/wordpress/", "/category/"):
 		if wordpress_pattern in url and not "=http://" in url and not "=https://" in url:
@@ -533,6 +519,12 @@ def main():
 	last_printed = None
 	for line in sys.stdin:
 		url = line.rstrip()
+		url = url.replace("feed://", "http://", 1)
+		url = url.replace("itpc://", "http://", 1)
+
+		if not (url.startswith("http://") or url.startswith("https://")):
+			continue
+
 		try:
 			schema, _, domain, rest = url.split('/', 3)
 		except ValueError:
