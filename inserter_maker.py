@@ -18,6 +18,11 @@ if "DISABLE_HASH_UNIQ" not in os.environ:
 else:
 	quick_dedup = False
 
+if "DISABLE_GARBAGE_AVOIDANCE" not in os.environ:
+	garbage_avoidance = True
+else:
+	garbage_avoidance = False
+
 # Just for progress output
 lines_per_print = 10000
 
@@ -225,6 +230,7 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 	start = time.time()
 	n = 0 # Because loop body might never run
 	print "Quick dedup is %s." % ("on" if quick_dedup else "off")
+	print "Garbage avoidance hack is %s." % ("on (disable it for initial imports)" if garbage_avoidance else "off")
 	if quick_dedup:
 		already_seen = set()
 	for n, feed_url in enumerate(inputf):
@@ -233,6 +239,9 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 
 		if n != 0 and n % lines_per_print == 0:
 			print_progress(n, start, inserted, already)
+			if garbage_avoidance and inserted >= int(lines_per_print * 0.9995):
+				print "Inserting >= 99.95% of URLs; probably receiving garbage; aborting."
+				return
 			inserted = 0
 			already = 0
 			start = time.time()
