@@ -284,16 +284,20 @@ def xanga_com(p):
 		,"http://www.xanga.com/%s/rss" % (blogname,)
 	]
 
+def is_bad(p):
+	if 'commentWinOpen' in p or ');' in p or 'open(' in p or 'javascript:' in p:
+		return True
+	return False
+
 def as_is(p):
+	if is_bad(p):
+		return []
 	return [p]
 
 def as_is_and_lower(p):
-	return [p, p.lower()]
-
-def as_is_without_js_garbage(p):
-	if 'commentWinOpenB' in p or ');' in p:
+	if is_bad(p):
 		return []
-	return [p]
+	return [p, p.lower()]
 
 def get_wordpress_feed_urls_for_base(base):
 	return [
@@ -440,7 +444,7 @@ path_to_extraction = {
 	,'blog.yam.com': Extraction(keep=FIRST_SLASH, feedfn=None)
 	# TODO: news.google.com, needs filter on output=(rss|atom)
 	,'webcast.berkeley.edu/media/common/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
-	,"fullrss.net": Extraction(keep=FULL_URL, feedfn=as_is_without_js_garbage)
+	,"fullrss.net": Extraction(keep=FULL_URL, feedfn=as_is)
 	,"mrss.dokoda.jp/a/": Extraction(keep=FULL_URL, feedfn=as_is)
 	,"fc2.com": Extraction(keep=DOMAIN, feedfn=fc2_com)
 }
