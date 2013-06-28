@@ -290,6 +290,11 @@ def as_is(p):
 def as_is_and_lower(p):
 	return [p, p.lower()]
 
+def as_is_without_js_garbage(p):
+	if 'commentWinOpenB' in p or ');' in p:
+		return []
+	return [p]
+
 def get_wordpress_feed_urls_for_base(base):
 	return [
 		 "%s/feed" % (base,)
@@ -435,7 +440,7 @@ path_to_extraction = {
 	,'blog.yam.com': Extraction(keep=FIRST_SLASH, feedfn=None)
 	# TODO: news.google.com, needs filter on output=(rss|atom)
 	,'webcast.berkeley.edu/media/common/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
-	,"fullrss.net": Extraction(keep=FULL_URL, feedfn=as_is)
+	,"fullrss.net": Extraction(keep=FULL_URL, feedfn=as_is_without_js_garbage)
 	,"mrss.dokoda.jp/a/": Extraction(keep=FULL_URL, feedfn=as_is)
 	,"fc2.com": Extraction(keep=DOMAIN, feedfn=fc2_com)
 }
