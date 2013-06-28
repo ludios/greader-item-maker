@@ -108,6 +108,8 @@ def groups_yahoo_com(p):
 
 def ameblo_jp(p):
 	username = get_path_segment(p, 1)
+	if username == "" or username.endswith(".html") or username.endswith(".txt") or username.endswith("javascript;") or username.endswith(".ico"):
+		username = get_non_www_domain_segment(p, 1)
 	return [
 		 "http://rssblog.ameba.jp/%s/rss20.xml" % (username,)
 		,"http://feedblog.ameba.jp/rss/ameblo/%s/rss20.xml" % (username,)
