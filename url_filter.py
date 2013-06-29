@@ -644,7 +644,6 @@ path_to_extraction = {
 	,'bandcamp.com/feed/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'bandcamp.com': Extraction(keep=DOMAIN, feedfn=bandcamp_com)
 	,'hatena.ne.jp': Extraction(keep=FIRST_SLASH, feedfn=hatena_ne_jp)
-	# vimeo.com needs to be filtered afterwards to get usernames and exclude video IDs
 	,'vimeo.com': Extraction(keep=FIRST_SLASH, feedfn=vimeo_com)
 	,'flickr.com/services/feeds/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'flickr.com/recent_comments_feed.gne': Extraction(keep=FULL_URL, feedfn=as_is)
