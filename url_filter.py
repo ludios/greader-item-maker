@@ -237,7 +237,7 @@ def blogger_com_feeds(p):
 	]
 
 def feedsky_com(p):
-	if p.endswith(".html") or "/~feedsky/" in p:
+	if p.endswith(".html") or "/~" in p:
 		return []
 	return [p]
 
@@ -478,6 +478,29 @@ def blog_yam_com(p):
 		,"http://diary.blog.yam.com/rss.php?blog_id=%s&ver=atom03" % (username.lower(),)
 	]
 
+def hi_baidu_com(p):
+	username = get_path_segment(p, 1)
+	return [
+		 "http://hi.baidu.com/%s/rss" % (username,)
+		,"http://hi.baidu.com/%s/rss" % (username.lower(),)
+	]
+
+def blog_xuite_net(p):
+	username = get_path_segment(p, 1)
+	blogname = get_path_segment(p, 2)
+	if not blogname:
+		blognames = ['diary', 'geek', 'blog', 'tech']
+	else:
+		blognames = [blogname]
+	del blogname
+	feeds = []
+	for bn in blognames:
+		feeds.append("http://blog.xuite.net/%s/%s/rss.xml" % (username, bn))
+		feeds.append("http://blog.xuite.net/%s/%s/rss.xml" % (username.lower(), bn))
+		feeds.append("http://blog.xuite.net/%s/%s/atom.xml" % (username, bn))
+		feeds.append("http://blog.xuite.net/%s/%s/atom.xml" % (username.lower(), bn))
+	return feeds
+
 def is_bad(p):
 	if 'commentWinOpen' in p or ');' in p or 'open(' in p or 'javascript:' in p:
 		return True
@@ -655,6 +678,8 @@ path_to_extraction = {
 	,"mrss.dokoda.jp/a/": Extraction(keep=FULL_URL, feedfn=as_is)
 	,"fc2.com": Extraction(keep=DOMAIN, feedfn=fc2_com)
 	,"feedex.net/feed/": Extraction(keep=FULL_URL, feedfn=as_is)
+	,"hi.baidu.com": Extraction(keep=FIRST_SLASH, feedfn=hi_baidu_com)
+	,"blog.xuite.net": Extraction(keep=SECOND_SLASH, feedfn=blog_xuite_net)
 }
 
 _domain_to_extraction = defaultdict(list)
