@@ -1,0 +1,39 @@
+#!/usr/bin/python
+
+import sys
+from collections import defaultdict
+
+
+def up_domain_variants(domain):
+	variants = []
+	parts = domain.split('.')
+	for how_many in xrange(1, len(parts)):
+		variant = '.'.join(parts[-how_many:])
+		variants.append(variant)
+
+	variants.reverse()
+	return [domain] + variants
+
+assert up_domain_variants("blah.cnn.com") == ["blah.cnn.com", "cnn.com", "com"]
+
+
+def main():
+	counts = defaultdict(int)
+
+	for line in sys.stdin:
+		url = line.rstrip()
+		try:
+			schema, _, domain, rest = url.split('/', 3)
+		except ValueError:
+			schema, _, domain = url.split('/', 2)
+		for domain_variant in up_domain_variants(domain):
+			counts[domain_variant] += 1
+
+	for k, count in counts.iteritems():
+		if k == "" or not "." in k:
+			continue
+		print str(count) + "\t" + k
+
+
+if __name__ == '__main__':
+	main()
