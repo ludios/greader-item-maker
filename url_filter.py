@@ -334,7 +334,7 @@ def get_guessed_feeds(url):
 	# TODO: vbulletin
 	# TODO: other forums
 	for wordpress_pattern in ("/wp-content/", "/wordpress/", "/category/"):
-		if wordpress_pattern in url and not "=http://" in url and not "=https://" in url:
+		if wordpress_pattern in url and not "=http://" in url and not "=https://" in url and not "www.dannychoo.com/archive" in url:
 			base = url.split(wordpress_pattern, 1)[0]
 			if wordpress_pattern == "/wordpress/":
 				base += "/wordpress"
@@ -342,7 +342,7 @@ def get_guessed_feeds(url):
 			if len(base) <= 70:
 				return get_wordpress_feed_urls_for_base(base)
 
-	if (url.endswith(".html") or url.endswith("/")) and not ".blogspot." in url and not "=http" in url and not '?http' in url:
+	if (url.endswith(".html") or url.endswith("/")) and not ".blogspot." in url and not "=http" in url and not '?http' in url and not "www.dannychoo.com/archive" in url:
 		yyyy_mm_matches = YYYY_MM_PATH_RE.findall(url)
 		if yyyy_mm_matches:
 			base = url.split(yyyy_mm_matches[0], 1)[0]
@@ -462,7 +462,7 @@ path_to_extraction = {
 	,'blog.yam.com': Extraction(keep=FIRST_SLASH, feedfn=None)
 	# TODO: news.google.com, needs filter on output=(rss|atom)
 	,'webcast.berkeley.edu/media/common/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
-	,"fullrss.net": Extraction(keep=FULL_URL, feedfn=as_is)
+	,"fullrss.net/a/": Extraction(keep=FULL_URL, feedfn=as_is)
 	,"mrss.dokoda.jp/a/": Extraction(keep=FULL_URL, feedfn=as_is)
 	,"fc2.com": Extraction(keep=DOMAIN, feedfn=fc2_com)
 }
