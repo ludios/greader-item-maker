@@ -23,8 +23,8 @@ if "DISABLE_GARBAGE_AVOIDANCE" not in os.environ:
 else:
 	garbage_avoidance = False
 
-# Just for progress output
-lines_per_print = 10000
+# For progress messages and garbage avoidance hack
+lines_per_print = 2000
 
 parent = os.path.dirname
 
@@ -202,10 +202,22 @@ def open_db(db_path):
 		block_cache_size=(128*1024*1024))
 
 
-def print_progress(n, start, inserted, already):
+def open_probable_garbage(fname):
+	probable_garbage = set()
+	if os.path.exists(fname):
+		with open(fname, "rb") as f:
+			for line in f:
+				probable_garbage.add(line.rstrip())
+
+	print "Loaded %d URLs from probable garbage" % (len(probable_garbage),)
+
+	return probable_garbage, open(fname, "ab")
+
+
+def print_progress(n, start, inserted, already, garbaged):
 	end = time.time()
-	print "%d\tread at\t%.0f\tURLs/sec, %d\tinserted/queued, %d\talready in db" % (
-		n, lines_per_print/float(end - start), inserted, already)
+	print "%d\tread at\t%.0f\tURLs/sec, %d\tinserted/queued, %d\talready in db, %d\tgarbaged" % (
+		n, lines_per_print/float(end - start), inserted, already, garbaged)
 
 
 def get_mtime(fname):
@@ -216,7 +228,15 @@ def get_mtime(fname):
 	return s.st_mtime
 
 
-def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, start_at_input_line):
+def last2seg(url): # get only last two segments of domain
+	try:
+		schema, _, domain, rest = url.split("/", 3)
+	except ValueError:
+		schema, _, domain = url.split("/", 2)
+	return domain.split(".")[-2:]
+
+
+def process_urls(db, probable_garbage, probable_garbage_f, items_root, inputf, new_encoded_urls, num_urls_in_item, start_at_input_line):
 	stopfile = os.path.join(os.getcwd(), "STOP")
 	print "WARNING: To stop, do *not* use ctrl-c; instead, touch %s" % (stopfile,)
 	initial_stop_mtime = get_mtime(stopfile)
@@ -227,7 +247,11 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 
 	inserted = 0
 	already = 0
+	garbaged = 0
+	last_domain = None
 	start = time.time()
+	WRITE_TO_DB, WRITE_TO_GARBAGE = range(2)
+	write_mode = WRITE_TO_DB
 	n = 0 # Because loop body might never run
 	print "Quick dedup is %s." % ("on" if quick_dedup else "off")
 	print "Garbage avoidance hack is %s." % ("on (disable it for initial imports)" if garbage_avoidance else "off")
@@ -238,12 +262,14 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 			continue
 
 		if n != 0 and n % lines_per_print == 0:
-			print_progress(n, start, inserted, already)
+			print_progress(n, start, inserted, already, garbaged)
 			if garbage_avoidance and inserted >= int(lines_per_print * 0.9995):
-				print "Inserting >= 99.95% of URLs; probably receiving garbage; aborting."
-				return
+				print "Inserting >= 99.95% of URLs; probably receiving garbage; writing to garbage until we see another domain."
+				write_mode = WRITE_TO_GARBAGE
+				last_domain = None
 			inserted = 0
 			already = 0
+			garbaged = 0
 			start = time.time()
 
 			if get_mtime(stopfile) != initial_stop_mtime:
@@ -261,44 +287,63 @@ def process_urls(db, items_root, inputf, new_encoded_urls, num_urls_in_item, sta
 				continue
 			already_seen.add(hashed_feed_url)
 
-		if feed_url.startswith("ftp://"):
-			print "Skipping FTP feed %r" % (feed_url,)
+		if feed_url in probable_garbage:
 			continue
+
 		try:
 			feed_url.decode('ascii')
 		except UnicodeDecodeError:
 			print "Failed to decode as ascii; skipping %r" % (feed_url,)
 			continue
 		if not (feed_url.startswith("http://") or feed_url.startswith("https://")):
-			print "Skipping unknown-schema URL %r" % (feed_url,)
+			print "Skipping non-http/https URL %r" % (feed_url,)
 			continue
-		encoded_url = urllib.quote_plus(feed_url)
-		if encoded_url in new_encoded_urls or db.has(reversed_encoded_url(encoded_url)):
-			already += 1
-			continue
-		new_encoded_urls.add(encoded_url)
-		inserted += 1
+
+		if write_mode == WRITE_TO_GARBAGE:
+			this_domain = last2seg(feed_url)
+			if last_domain is not None and this_domain != last_domain:
+				# This URL has a different domain from the last URL, so the garbage has probably stopped
+				write_mode = WRITE_TO_DB
+			last_domain = this_domain
+
+		if write_mode == WRITE_TO_DB:
+			encoded_url = urllib.quote_plus(feed_url)
+			if encoded_url in new_encoded_urls or db.has(reversed_encoded_url(encoded_url)):
+				already += 1
+				continue
+			new_encoded_urls.add(encoded_url)
+			inserted += 1
+		elif write_mode == WRITE_TO_GARBAGE:
+			# Write unencoded URLs to garbage
+			probable_garbage_f.write(feed_url + "\n")
+			probable_garbage_f.flush()
+			probable_garbage.add(feed_url)
+			garbaged += 1
+		else:
+			1/0
 
 		##print encoded_url, "queued for insertion"
 
 		maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls, num_urls_in_item)
 
-	print_progress(n, start, inserted, already)
+	print_progress(n, start, inserted, already, garbaged)
 	maybe_insert_new_encoded_urls(db, items_root, new_encoded_urls, num_urls_in_item)
 
 
 def main():
 	db_path = sys.argv[1]
-	items_root = sys.argv[2]
-	num_urls_in_item = int(sys.argv[3])
+	probable_garbage_path = sys.argv[2]
+	items_root = sys.argv[3]
+	num_urls_in_item = int(sys.argv[4])
 	assert 10 <= num_urls_in_item <= 20000, num_urls_in_item
 	try:
-		start_at_input_line = int(sys.argv[4])
+		start_at_input_line = int(sys.argv[5])
 		assert start_at_input_line >= 0, start_at_input_line
 	except IndexError:
 		start_at_input_line = 0
 
 	db = open_db(db_path)
+	probable_garbage, probable_garbage_f = open_probable_garbage(probable_garbage_path)
 	new_encoded_urls_packed = db.get("$new_encoded_urls$")
 	if new_encoded_urls_packed: # only want it if it's not None or ""
 		new_encoded_urls = set(new_encoded_urls_packed.split("\x00"))
@@ -308,13 +353,13 @@ def main():
 	print "Loaded %d new_encoded_urls from db" % (len(new_encoded_urls),)
 
 	try:
-		process_urls(db, items_root, sys.stdin, new_encoded_urls, num_urls_in_item, start_at_input_line)
+		process_urls(db, probable_garbage, probable_garbage_f, items_root, sys.stdin, new_encoded_urls, num_urls_in_item, start_at_input_line)
 	finally:
 		db.put("$new_encoded_urls$", "\x00".join(new_encoded_urls))
 		# Not enough URLs for a work item, so store them for next time
 		print "Wrote %d new_encoded_urls to db" % (len(new_encoded_urls),)
 		db.close()
-
+		probable_garbage_f.close()
 
 try: from refbinder.api import bindRecursive
 except ImportError: pass
