@@ -68,6 +68,23 @@ def wordpress_com(p):
 		,"http://%s.wordpress.com/?feed=comments-rss2" % (username,) # very rare
 	]
 
+def podbean_com(p):
+	assert not p.endswith('/'), p
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		 "http://%s.podbean.com/feed" % (username,)
+		,"http://%s.podbean.com/feed/" % (username,)
+		,"http://%s.podbean.com/feed/atom" % (username,)
+		,"http://%s.podbean.com/feed/atom/" % (username,)
+		,"http://%s.podbean.com/feed/rss" % (username,)
+		,"http://%s.podbean.com/feed/rss/" % (username,)
+		,"http://%s.podbean.com/comments/feed" % (username,)
+		,"http://%s.podbean.com/comments/feed/" % (username,)
+		,"http://%s.podbean.com/?feed=rss2" % (username,) # rare
+		,"http://%s.podbean.com/?feed=atom" % (username,) # rare
+		,"http://%s.podbean.com/?feed=comments-rss2" % (username,) # very rare
+	]
+
 def blogspot_com(p):
 	if ".bp.blogspot.com" in p:
 		return []
@@ -410,6 +427,7 @@ def bandcamp_com(p):
 	]
 
 def vimeo_com(p):
+	# This catches username, tags ("tag:"), video IDs; we don't want the video IDs
 	username = get_path_segment(p, 1)
 	try:
 		int(username)
@@ -426,6 +444,38 @@ def podomatic_com(p):
 	username = get_non_www_domain_segment(p, 1)
 	return [
 		"http://%s.podomatic.com/rss2.xml" % (username,)
+	]
+
+def blog_sina_com_cn(p):
+	username = get_path_segment(p, 1)
+	return [
+		 "http://blog.sina.com.cn/rss/%s.xml" % (username,)
+		,"http://blog.sina.com.cn/rss/%s.xml" % (username.lower(),)
+	]
+
+def libsyn_com(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		"http://%s.libsyn.com/rss" % (username,)
+	]
+
+def blog_yam_com(p):
+	username = get_path_segment(p, 1)
+	if '.' in username:
+		return []
+	return [
+		 "http://blog.yam.com/%s/rss.xml" % (username,)
+		,"http://blog.yam.com/%s/rss.xml" % (username.lower(),)
+		,"http://blog.yam.com/%s/atom.xml" % (username,)
+		,"http://blog.yam.com/%s/atom.xml" % (username.lower(),)
+		,"http://blog.yam.com/rss.php?blog_id=%s&ver=2.0" % (username,)
+		,"http://blog.yam.com/rss.php?blog_id=%s&ver=2.0" % (username.lower(),)
+		,"http://blog.yam.com/rss.php?blog_id=%s&ver=atom03" % (username,)
+		,"http://blog.yam.com/rss.php?blog_id=%s&ver=atom03" % (username.lower(),)
+		,"http://diary.blog.yam.com/rss.php?blog_id=%s&ver=2.0" % (username,)
+		,"http://diary.blog.yam.com/rss.php?blog_id=%s&ver=2.0" % (username.lower(),)
+		,"http://diary.blog.yam.com/rss.php?blog_id=%s&ver=atom03" % (username,)
+		,"http://diary.blog.yam.com/rss.php?blog_id=%s&ver=atom03" % (username.lower(),)
 	]
 
 def is_bad(p):
@@ -586,19 +636,19 @@ path_to_extraction = {
 	,'rss.sina.com.cn': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'blog.sina.com.cn/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'blog.sina.com.cn/myblog/index_rss.php': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'blog.sina.com.cn': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'blog.sina.com.cn': Extraction(keep=FIRST_SLASH, feedfn=blog_sina_com_cn)
 	,'loadaveragezero.com/drx/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'feedsky.com': Extraction(keep=FULL_URL, feedfn=feedsky_com)
 	,'rss.pics.livedoor.com': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'news.livedoor.com/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'podbean.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'podbean.com': Extraction(keep=DOMAIN, feedfn=podbean_com)
 	,'blogs.msdn.com': Extraction(keep=FIRST_SLASH, feedfn=None)
-	,'libsyn.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'libsyn.com': Extraction(keep=DOMAIN, feedfn=libsyn_com)
 	,'prlog.org/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'npr.org/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	# TODO: spaces.msn.com; has annoying pattern
 	,'blog.yam.com/rss.php': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'blog.yam.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'blog.yam.com': Extraction(keep=FIRST_SLASH, feedfn=blog_yam_com)
 	# TODO: news.google.com, needs filter on output=(rss|atom)
 	,'webcast.berkeley.edu/media/common/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,"fullrss.net/a/": Extraction(keep=FULL_URL, feedfn=as_is)
