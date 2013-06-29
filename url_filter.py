@@ -138,7 +138,7 @@ def livejournal_com(p):
 		,'http://www.livejournal.com/users/%s/data/atom' % (username,)
 	]
 
-def typepad_com(p): # also handles typepad.jp
+def typepad_com(p): # also handles typepad.jp and blogs.com
 	if p.endswith("/"):
 		# No blogname, so we don't know where the feed is
 		return []
@@ -292,6 +292,142 @@ def xanga_com(p):
 		,"http://www.xanga.com/%s/rss" % (blogname,)
 	]
 
+def pixnet_net(p):
+	blogname = get_non_www_domain_segment(p, 1)
+	if blogname == "blog":
+		blogname = get_path_segment(p, 1)
+
+	return [
+		 "http://feed.pixnet.net/blog/posts/rss/%s" % (blogname,)
+		,"http://feed.pixnet.net/blog/posts/atom/%s" % (blogname,)
+		,"http://blog.pixnet.net/rss/rss20/%s" % (blogname,)
+		,"http://blog.pixnet.net/rss/atom/%s" % (blogname,)
+		,"http://%s.pixnet.net/blog/comments/feed" % (blogname,)
+		,"http://%s.pixnet.net/blog/comments/feed" % (blogname,)
+		,"http://%s.pixnet.net/blog/feed/rss" % (blogname,)
+		,"http://%s.pixnet.net/blog/feed/atom" % (blogname,)
+	]
+
+def twitter_com(p):
+	username = get_path_segment(p, 1)
+	return [
+		 "http://api.twitter.com/1/statuses/user_timeline.rss?screen_name=%s" % (username,)
+		,"https://api.twitter.com/1/statuses/user_timeline.rss?screen_name=%s" % (username,)
+		,"http://api.twitter.com/1/statuses/user_timeline.rss?screen_name=%s" % (username.lower(),)
+		,"https://api.twitter.com/1/statuses/user_timeline.rss?screen_name=%s" % (username.lower(),)
+	]
+
+def dreamwidth_org(p):
+	blogname = get_non_www_domain_segment(p, 1)
+	return [
+		 "http://%s.dreamwidth.org/data/rss" % (blogname,)
+		,"http://%s.dreamwidth.org/data/atom" % (blogname,)
+	]
+
+def blog_com(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		 "http://%s.blog.com/rss" % (username,)
+		,"http://%s.blog.com/atom" % (username,)
+		,"http://%s.blog.com/rss/" % (username,)
+		,"http://%s.blog.com/atom/" % (username,)
+		,"http://%s.blog.com/feed" % (username,)
+		,"http://%s.blog.com/feed/" % (username,)
+		,"http://%s.blog.com/feed/atom" % (username,)
+		,"http://%s.blog.com/feed/atom/" % (username,)
+		,"http://%s.blog.com/feed/rss" % (username,)
+		,"http://%s.blog.com/feed/rss/" % (username,)
+		,"http://%s.blog.com/comments/feed" % (username,)
+		,"http://%s.blog.com/comments/feed/" % (username,)
+		,"http://%s.blog.com/?feed=rss2" % (username,)
+		,"http://%s.blog.com/?feed=atom" % (username,) # rare
+		,"http://%s.blog.com/?feed=comments-rss2" % (username,) # very rare
+	]
+
+def vox_com(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		 "http://%s.vox.com/library/posts/atom.xml" % (username,)
+		,"http://%s.vox.com/library/posts/atom-full.xml" % (username,)
+		,"http://%s.vox.com/library/posts/rss.xml" % (username,)
+		,"http://%s.vox.com/library/posts/rss-full.xml" % (username,)
+	]
+
+def jux_com(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		 "http://%s.jux.com/quarks.rss" % (username,)
+		,"https://%s.jux.com/quarks.rss" % (username,)
+	]
+
+def reddit_com_user(p):
+	username = get_path_segment(p, 2)
+	return [
+		 "http://www.reddit.com/user/%s/.rss" % (username,)
+		,"http://www.reddit.com/user/%s/comments/.rss" % (username,)
+		,"http://www.reddit.com/user/%s/submitted/.rss" % (username,)
+		,"http://www.reddit.com/user/%s/.rss" % (username.lower(),)
+		,"http://www.reddit.com/user/%s/comments/.rss" % (username.lower(),)
+		,"http://www.reddit.com/user/%s/submitted/.rss" % (username.lower(),)
+	]
+
+def spaces_live_com(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		 "http://%s.spaces.live.com/feed.rss" % (username,)
+		,"http://%s.spaces.live.com/blog/feed.rss" % (username,)
+		,"http://%s.spaces.live.com/photos/feed.rss" % (username,)
+	]
+
+def at_webry_info(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		"http://%s.at.webry.info/rss/index.rdf" % (username,)
+	]
+
+def lesswrong_com_user(p):
+	username = get_path_segment(p, 2)
+	return [
+		 "http://lesswrong.com/user/%s/overview/.rss" % (username,)
+		,"http://lesswrong.com/user/%s/submitted/.rss" % (username,)
+		,"http://lesswrong.com/user/%s/comments/.rss" % (username,)
+		,"http://lesswrong.com/user/%s/overview/.rss" % (username.lower(),)
+		,"http://lesswrong.com/user/%s/submitted/.rss" % (username.lower(),)
+		,"http://lesswrong.com/user/%s/comments/.rss" % (username.lower(),)
+	]
+
+def multiply_com(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		 "http://%s.multiply.com/feed.rss" % (username,)
+		,"http://%s.multiply.com/feed" % (username,)
+	]
+
+def bandcamp_com(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		"http://%s.bandcamp.com/feed" % (username,)
+	]
+
+def vimeo_com(p):
+	username = get_path_segment(p, 1)
+	try:
+		int(username)
+		return []
+	except ValueError:
+		return [
+			 "http://vimeo.com/%s/videos/rss" % (username,)
+			,"https://vimeo.com/%s/videos/rss" % (username,)
+			,"http://vimeo.com/%s/videos/rss" % (username.lower(),)
+			,"https://vimeo.com/%s/videos/rss" % (username.lower(),)
+		]
+
+def podomatic_com(p):
+	username = get_non_www_domain_segment(p, 1)
+	return [
+		"http://%s.podomatic.com/rss2.xml" % (username,)
+	]
+
 def is_bad(p):
 	if 'commentWinOpen' in p or ');' in p or 'open(' in p or 'javascript:' in p:
 		return True
@@ -395,33 +531,34 @@ path_to_extraction = {
 	,'xanga.com': Extraction(keep=DOMAIN, feedfn=xanga_com)
 	,'feed.pixnet.net/blog/posts/rss/': Extraction(keep=FOURTH_SLASH, feedfn=as_is)
 	,'feed.pixnet.net/blog/posts/atom/': Extraction(keep=FOURTH_SLASH, feedfn=as_is)
-	,'pixnet.net': Extraction(keep=DOMAIN, feedfn=None)
-	,'twitter.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'blog.pixnet.net/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
+	,'pixnet.net': Extraction(keep=DOMAIN, feedfn=pixnet_net)
+	,'twitter.com': Extraction(keep=FIRST_SLASH, feedfn=twitter_com)
 	,'rss2lj.net': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'gplusrss.com': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'googleplusfeed.net': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'twitter-rss.com': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'dreamwidth.org': Extraction(keep=DOMAIN, feedfn=None)
-	,'blog.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'dreamwidth.org': Extraction(keep=DOMAIN, feedfn=dreamwidth_org)
+	,'blog.com': Extraction(keep=DOMAIN, feedfn=blog_com)
 	,'pipes.yahoo.com/pipes/pipe.run': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'page2rss.com/atom/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'page2rss.com/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'boards.4chan.org': Extraction(keep=FIRST_SLASH, feedfn=None)
 	,'dis.4chan.org/atom/': Extraction(keep=SECOND_SLASH, feedfn=None)
-	,'vox.com': Extraction(keep=DOMAIN, feedfn=None)
-	,'jux.com': Extraction(keep=DOMAIN, feedfn=None)
-	,'at.webry.info': Extraction(keep=DOMAIN, feedfn=None)
+	,'vox.com': Extraction(keep=DOMAIN, feedfn=vox_com)
+	,'jux.com': Extraction(keep=DOMAIN, feedfn=jux_com)
+	,'at.webry.info': Extraction(keep=DOMAIN, feedfn=at_webry_info)
 	,'rsspect.com': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'buzz.googleapis.com/feeds/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'craigslist.org': Extraction(keep=FIRST_SLASH, feedfn=None)
-	,'www.reddit.com/user/': Extraction(keep=SECOND_SLASH, feedfn=None)
-	,'pay.reddit.com/user/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'www.reddit.com/user/': Extraction(keep=SECOND_SLASH, feedfn=reddit_com_user)
+	,'pay.reddit.com/user/': Extraction(keep=SECOND_SLASH, feedfn=reddit_com_user)
 	,'www.reddit.com/r/': Extraction(keep=SECOND_SLASH, feedfn=None)
 	,'pay.reddit.com/r/': Extraction(keep=SECOND_SLASH, feedfn=None)
 	,'blog.myspace.com/blog/rss.cfm': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'spaces.live.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'spaces.live.com': Extraction(keep=DOMAIN, feedfn=spaces_live_com)
 	,'rss.searchyc.com': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'lesswrong.com/user/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'lesswrong.com/user/': Extraction(keep=SECOND_SLASH, feedfn=lesswrong_com_user)
 	,'www.quora.com': Extraction(keep=FIRST_SLASH, feedfn=None)
 	,'www.google.com/reader/public/': Extraction(keep=FULL_URL, feedfn=as_is)
 	# skipped kickstarter
@@ -430,23 +567,25 @@ path_to_extraction = {
 	,'youtube.com/user/': Extraction(keep=SECOND_SLASH, feedfn=None)
 	,'youtube.com/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'gdata.youtube.com/feeds/': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'multiply.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'multiply.com': Extraction(keep=DOMAIN, feedfn=multiply_com)
 	,'bandcamp.com/feed/': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'bandcamp.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'bandcamp.com': Extraction(keep=DOMAIN, feedfn=bandcamp_com)
 	,'hatena.ne.jp': Extraction(keep=FIRST_SLASH, feedfn=hatena_ne_jp)
 	# vimeo.com needs to be filtered afterwards to get usernames and exclude video IDs
-	,'vimeo.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'vimeo.com': Extraction(keep=FIRST_SLASH, feedfn=vimeo_com)
 	,'flickr.com/services/feeds/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'flickr.com/recent_comments_feed.gne': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'api.twitter.com/1/statuses/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'twitter.com/statuses/user_timeline/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'rss.egloos.com': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'egloos.com': Extraction(keep=DOMAIN, feedfn=egloos_com)
-	,'podomatic.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'podomatic.com': Extraction(keep=DOMAIN, feedfn=podomatic_com)
 	,'secuobs.com/revue/xml/': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'blogs.com': Extraction(keep=DOMAIN, feedfn=None)
+	,'blogs.com': Extraction(keep=FIRST_SLASH, feedfn=typepad_com)
 	,'mysyndicaat.com/myfeed/feed/': Extraction(keep=FULL_URL, feedfn=as_is)
+	,'rss.sina.com.cn': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'blog.sina.com.cn/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
+	,'blog.sina.com.cn/myblog/index_rss.php': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'blog.sina.com.cn': Extraction(keep=FIRST_SLASH, feedfn=None)
 	,'loadaveragezero.com/drx/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'feedsky.com': Extraction(keep=FULL_URL, feedfn=feedsky_com)
@@ -465,6 +604,7 @@ path_to_extraction = {
 	,"fullrss.net/a/": Extraction(keep=FULL_URL, feedfn=as_is)
 	,"mrss.dokoda.jp/a/": Extraction(keep=FULL_URL, feedfn=as_is)
 	,"fc2.com": Extraction(keep=DOMAIN, feedfn=fc2_com)
+	,"feedex.net/feed/": Extraction(keep=FULL_URL, feedfn=as_is)
 }
 
 _domain_to_extraction = defaultdict(list)
@@ -522,8 +662,8 @@ assert get_extraction("blah.com", "") == None
 assert get_extraction("youtube.com", "user/blah") == Extraction(keep=SECOND_SLASH, feedfn=None)
 assert get_extraction("youtube.com", "usx") == None
 assert get_extraction("bandcamp.com", "feed/blah") == Extraction(keep=FULL_URL, feedfn=as_is)
-assert get_extraction("bandcamp.com", "fee") == Extraction(keep=DOMAIN, feedfn=None)
-assert get_extraction("x.bandcamp.com", "") == Extraction(keep=DOMAIN, feedfn=None)
+assert get_extraction("bandcamp.com", "fee") == Extraction(keep=DOMAIN, feedfn=bandcamp_com)
+assert get_extraction("x.bandcamp.com", "") == Extraction(keep=DOMAIN, feedfn=bandcamp_com)
 
 
 def without_query(rest):
