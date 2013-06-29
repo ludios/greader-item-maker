@@ -42,7 +42,7 @@ def get_path_segment(p, index):
 	try:
 		schema, _, domain, rest = p.split("/", 3)
 		return rest.split('/')[index - 1]
-	except ValueError:
+	except (ValueError, IndexError):
 		return ''
 
 def tumblr_com(p):
@@ -501,6 +501,12 @@ def blog_xuite_net(p):
 		feeds.append("http://blog.xuite.net/%s/%s/atom.xml" % (username.lower(), bn))
 	return feeds
 
+def api_twitter_com(p):
+	if not ('.rss' in p or '.atom' in p):
+		return []
+	else:
+		return as_is_and_lower(p)
+
 def is_bad(p):
 	if 'commentWinOpen' in p or ');' in p or 'open(' in p or 'javascript:' in p:
 		return True
@@ -647,7 +653,7 @@ path_to_extraction = {
 	,'vimeo.com': Extraction(keep=FIRST_SLASH, feedfn=vimeo_com)
 	,'flickr.com/services/feeds/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'flickr.com/recent_comments_feed.gne': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'api.twitter.com/1/statuses/': Extraction(keep=FULL_URL, feedfn=as_is)
+	,'api.twitter.com/1/statuses/': Extraction(keep=FULL_URL, feedfn=api_twitter_com)
 	,'twitter.com/statuses/user_timeline/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'rss.egloos.com': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'egloos.com': Extraction(keep=DOMAIN, feedfn=egloos_com)
