@@ -104,6 +104,8 @@ def blog4ever_com(p):
 
 def groups_google_com(p):
 	groupname = get_path_segment(p, 2)
+	# TODO: _topics; ?num=50, ?num=100
+	# TODO: https://groups.google.com/forum/
 	return [
 		 'http://groups.google.com/group/%s/feed/rss_v2_0_msgs.xml' % (groupname,)
 		,'http://groups.google.com/group/%s/feed/atom_v1_0_msgs.xml' % (groupname,)
@@ -116,6 +118,9 @@ def groups_google_com(p):
 	]
 
 def groups_yahoo_com(p):
+	# Fixes this garbage:
+	# http://rss.groups.yahoo.com/group/lightsofindia;_ylc=x3odmtjmbhfnazf2bf9tazk3mzu5nze0bgdycelkazizmdm2ndq2bgdychnwswqdmtcwnta0nzc1narzzwmddnrsbhnsawn2z2hwbhn0aw1lazeyoty2mzu4njg-/rss
+	p = p.split(';', 1)[0]
 	return [
 		 "http://rss.%s/rss" % (get_domain_and_path(last3seg(p)),)
 		,"http://%s/messages?rss=1" % (get_domain_and_path(last3seg(p)),)
@@ -151,6 +156,7 @@ def livejournal_com(p):
 	return [
 		 'http://%s.livejournal.com/data/rss' % (username,)
 		,'http://%s.livejournal.com/data/atom' % (username,)
+		# Older feeds for users
 		,'http://www.livejournal.com/users/%s/data/rss' % (username,)
 		,'http://www.livejournal.com/users/%s/data/atom' % (username,)
 	]
@@ -237,9 +243,13 @@ def blogger_com_feeds(p):
 	]
 
 def feedsky_com(p):
-	if p.endswith(".html") or "/~" in p:
+	if '.html' in p or '.php' in p or '.aspx' in p or "/~" in p:
 		return []
-	return [p]
+	feedname = get_path_segment(p, 1)
+	return [
+		 "http://feed.feedsky.com/%s" % (feedname,)
+		,"http://feed.feedsky.com/%s" % (feedname.lower(),)
+	]
 
 def fc2_com(p):
 	part1 = get_non_www_domain_segment(p, 1)
@@ -272,6 +282,8 @@ def blog_livedoor_jp(p):
 	return [
 		 "http://blog.livedoor.jp/%s/index.rdf" % (username,)
 		,"http://blog.livedoor.jp/%s/atom.xml" % (username,)
+		,"http://blog.livedoor.jp/%s/index.rdf" % (username.lower(),)
+		,"http://blog.livedoor.jp/%s/atom.xml" % (username.lower(),)
 	]
 
 def feed43_com(p):
@@ -375,6 +387,19 @@ def jux_com(p):
 	return [
 		 "http://%s.jux.com/quarks.rss" % (username,)
 		,"https://%s.jux.com/quarks.rss" % (username,)
+	]
+
+def reddit_com_r(p):
+	subreddit = get_path_segment(p, 2)
+	return [
+		 "http://www.reddit.com/r/%s/.rss" % (subreddit,)
+		,"http://www.reddit.com/r/%s/top/.rss" % (subreddit,)
+		,"http://www.reddit.com/r/%s/controversial/.rss" % (subreddit,)
+		,"http://www.reddit.com/r/%s/new/.rss" % (subreddit,)
+		,"http://www.reddit.com/r/%s/.rss" % (subreddit.lower(),)
+		,"http://www.reddit.com/r/%s/top/.rss" % (subreddit.lower(),)
+		,"http://www.reddit.com/r/%s/controversial/.rss" % (subreddit.lower(),)
+		,"http://www.reddit.com/r/%s/new/.rss" % (subreddit.lower(),)
 	]
 
 def reddit_com_user(p):
@@ -507,6 +532,19 @@ def api_twitter_com(p):
 	else:
 		return as_is_and_lower(p)
 
+def quora_com(p):
+	username_or_category = get_path_segment(p, 1)
+	return [
+		 "http://www.quora.com/%s/rss" % (username_or_category,)
+		,"https://www.quora.com/%s/rss" % (username_or_category,)
+	]
+
+def del_icio_us_rss(p):
+	if '/JRE_POST_LOG/' in p:
+		return []
+	else:
+		return as_is_and_lower(p)
+
 def is_bad(p):
 	if 'commentWinOpen' in p or ');' in p or 'open(' in p or 'javascript:' in p:
 		return True
@@ -632,16 +670,16 @@ path_to_extraction = {
 	,'craigslist.org': Extraction(keep=FIRST_SLASH, feedfn=None)
 	,'www.reddit.com/user/': Extraction(keep=SECOND_SLASH, feedfn=reddit_com_user)
 	,'pay.reddit.com/user/': Extraction(keep=SECOND_SLASH, feedfn=reddit_com_user)
-	,'www.reddit.com/r/': Extraction(keep=SECOND_SLASH, feedfn=None)
-	,'pay.reddit.com/r/': Extraction(keep=SECOND_SLASH, feedfn=None)
+	,'www.reddit.com/r/': Extraction(keep=SECOND_SLASH, feedfn=reddit_com_r)
+	,'pay.reddit.com/r/': Extraction(keep=SECOND_SLASH, feedfn=reddit_com_r)
 	,'blog.myspace.com/blog/rss.cfm': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'spaces.live.com': Extraction(keep=DOMAIN, feedfn=spaces_live_com)
 	,'rss.searchyc.com': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'lesswrong.com/user/': Extraction(keep=SECOND_SLASH, feedfn=lesswrong_com_user)
-	,'www.quora.com': Extraction(keep=FIRST_SLASH, feedfn=None)
+	,'www.quora.com': Extraction(keep=FIRST_SLASH, feedfn=quora_com)
 	,'www.google.com/reader/public/': Extraction(keep=FULL_URL, feedfn=as_is)
 	# skipped kickstarter
-	,'del.icio.us/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
+	,'del.icio.us/rss/': Extraction(keep=FULL_URL, feedfn=del_icio_us_rss)
 	,'del.icio.us/tag/': Extraction(keep=SECOND_SLASH, feedfn=None)
 	,'youtube.com/user/': Extraction(keep=SECOND_SLASH, feedfn=None)
 	,'youtube.com/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
@@ -666,7 +704,7 @@ path_to_extraction = {
 	,'blog.sina.com.cn/myblog/index_rss.php': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'blog.sina.com.cn': Extraction(keep=FIRST_SLASH, feedfn=blog_sina_com_cn)
 	,'loadaveragezero.com/drx/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
-	,'feedsky.com': Extraction(keep=FULL_URL, feedfn=feedsky_com)
+	,'feedsky.com': Extraction(keep=FIRST_SLASH, feedfn=feedsky_com)
 	,'rss.pics.livedoor.com': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'news.livedoor.com/rss/': Extraction(keep=FULL_URL, feedfn=as_is)
 	,'podbean.com': Extraction(keep=DOMAIN, feedfn=podbean_com)
