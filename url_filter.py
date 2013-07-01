@@ -790,7 +790,7 @@ def without_query(rest):
 	return rest
 
 
-EXTRACT, PRINT_FEED_URLS = range(2)
+EXTRACT, PRINT_FEED_URLS, PRINT_ORIG_AND_FEED_URLS = range(3)
 
 def main():
 	if sys.argv[1:] == ["print_paths"]:
@@ -800,6 +800,8 @@ def main():
 	mode = EXTRACT
 	if sys.argv[1:] == ["print_feed_urls"]:
 		mode = PRINT_FEED_URLS
+	elif sys.argv[1:] == ["print_orig_and_feed_urls"]:
+		mode = PRINT_ORIG_AND_FEED_URLS
 
 	last_printed = None
 	for line in sys.stdin:
@@ -848,6 +850,12 @@ def main():
 			if mode == EXTRACT:
 				print maybe_print
 			elif mode == PRINT_FEED_URLS:
+				if extraction.feedfn:
+					feed_urls = without_too_long(extraction.feedfn(maybe_print))
+					if feed_urls:
+						print "\n".join(feed_urls)
+			elif mode == PRINT_ORIG_AND_FEED_URLS:
+				print url
 				if extraction.feedfn:
 					feed_urls = without_too_long(extraction.feedfn(maybe_print))
 					if feed_urls:
