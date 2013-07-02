@@ -823,7 +823,10 @@ def main():
 
 		extraction = get_extraction(domain, rest)
 		if extraction is None:
-			if mode == PRINT_FEED_URLS:
+			if mode == PRINT_ORIG_AND_FEED_URLS:
+				print url
+
+			if mode == PRINT_FEED_URLS or mode == PRINT_ORIG_AND_FEED_URLS:
 				guessed_feeds = without_too_long(get_guessed_feeds(url))
 				if guessed_feeds:
 					print "\n".join(guessed_feeds)
@@ -849,13 +852,7 @@ def main():
 		if last_printed != maybe_print:
 			if mode == EXTRACT:
 				print maybe_print
-			elif mode == PRINT_FEED_URLS:
-				if extraction.feedfn:
-					feed_urls = without_too_long(extraction.feedfn(maybe_print))
-					if feed_urls:
-						print "\n".join(feed_urls)
-			elif mode == PRINT_ORIG_AND_FEED_URLS:
-				print url
+			elif mode == PRINT_FEED_URLS or mode == PRINT_ORIG_AND_FEED_URLS:
 				if extraction.feedfn:
 					feed_urls = without_too_long(extraction.feedfn(maybe_print))
 					if feed_urls:
